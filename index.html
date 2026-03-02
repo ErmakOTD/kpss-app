@@ -21,6 +21,7 @@
         /* Загрузка */
         .loading {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -28,12 +29,11 @@
             color: #00a884;
         }
         
-        .loading::after {
-            content: '';
-            width: 20px;
-            height: 20px;
-            margin-left: 10px;
-            border: 2px solid #00a884;
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin-top: 20px;
+            border: 3px solid #00a884;
             border-top-color: transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -81,6 +81,11 @@
         .sidebar-header h2 {
             font-size: 20px;
             color: #00a884;
+        }
+        
+        .sidebar-header span {
+            color: #8696a0;
+            font-size: 14px;
         }
         
         .sidebar-menu {
@@ -180,6 +185,11 @@
             display: flex;
             gap: 16px;
             color: #aebac1;
+        }
+        
+        .header-actions span {
+            cursor: pointer;
+            font-size: 20px;
         }
         
         /* Вкладки */
@@ -567,17 +577,44 @@
                 width: 100%;
             }
         }
+        
+        /* Ошибка */
+        .error {
+            text-align: center;
+            padding: 40px 20px;
+            color: #ff6b6b;
+        }
+        
+        .retry-btn {
+            background-color: #00a884;
+            color: #111b21;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div class="loading" id="loading">Загрузка данных</div>
+    <div class="loading" id="loading">
+        <div>Загрузка данных...</div>
+        <div class="spinner"></div>
+    </div>
+    
+    <div class="error" id="error" style="display: none;">
+        <div>❌ Ошибка загрузки данных</div>
+        <div style="font-size: 14px; margin-top: 10px;" id="errorMessage"></div>
+        <button class="retry-btn" onclick="location.reload()">Повторить</button>
+    </div>
     
     <div class="app-container" id="app" style="display: none;">
         <!-- Боковое меню -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>КПСС</h2>
-                <span style="color: #8696a0; font-size: 14px;" id="membersCount">17 участников</span>
+                <span id="membersCount">17 участников</span>
             </div>
             <div class="sidebar-menu">
                 <div class="menu-item active" onclick="switchMainTab('home'); closeSidebarOnMobile()">
@@ -616,8 +653,8 @@
                 <h1 id="mainTitle">КПСС</h1>
                 <span id="headerMembers">17 участников</span>
                 <div class="header-actions">
-                    <span onclick="toggleSearch()" style="cursor: pointer;">🔍</span>
-                    <span onclick="showMenu()" style="cursor: pointer;">⋮</span>
+                    <span onclick="toggleSearch()">🔍</span>
+                    <span onclick="showMenu()">⋮</span>
                 </div>
             </div>
             
@@ -687,12 +724,12 @@
     <div class="update-indicator" id="updateIndicator">Данные обновлены</div>
 
     <script>
-        // ========== НАСТРОЙКИ ==========
-        // ⚠️ ВСТАВЬ СЮДА ID СВОЕЙ ТАБЛИЦЫ!
-        const SPREADSHEET_ID = '2PACX-1vSsSqamntRqegFjdSxWXgutpyHpZx69KijaC7QgKGCHV7zPtkE3lUZ3mSV17lCZsYMep1so1gjCOk7G'; // ЗАМЕНИ НА СВОЙ ID
+        // ========== ID ТАБЛИЦЫ ==========
+        // ID из твоей ссылки
+        const SPREADSHEET_ID = '2PACX-1vSsSqamntRqegFjdSxWXgutpyHpZx69KijaC7QgKGCHV7zPtkE3lUZ3mSV17lCZsYMep1so1gjCOk7G';
         
-        // URL для получения данных из Google Sheets
-        const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv`;
+        // Базовый URL для получения данных в формате JSON
+        const BASE_URL = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv`;
         
         // Данные приложения
         let appData = {
@@ -700,9 +737,7 @@
             chats: [],
             schedule: [],
             hashtags: [],
-            gallery: [],
-            members: 17,
-            lastUpdate: null
+            gallery: []
         };
         
         // Скрытые чаты
@@ -713,73 +748,96 @@
             showLoading(true);
             
             try {
-                // Загружаем все листы параллельно
-                const [important, chats, schedule, hashtags, gallery] = await Promise.all([
-                    fetchSheet('important'),
-                    fetchSheet('chats'),
-                    fetchSheet('schedule'),
-                    fetchSheet('hashtags'),
-                    fetchSheet('gallery')
-                ]);
+                // Загружаем все листы
+                const important = await fetchSheet('important');
+                const chats = await fetchSheet('chats');
+                const schedule = await fetchSheet('schedule');
+                const hashtags = await fetchSheet('hashtags');
+                const gallery = await fetchSheet('gallery');
                 
-                // Преобразуем CSV в объекты
-                appData.important = parseCSV(important, ['id', 'sender', 'text', 'time', 'date']);
-                appData.chats = parseCSV(chats, ['id', 'name', 'avatar', 'last_sender', 'last_message', 'time', 'hidden']);
-                appData.schedule = parseCSV(schedule, ['id', 'day', 'time', 'subject', 'room', 'teacher']);
-                appData.hashtags = parseCSV(hashtags, ['id', 'category', 'tag']);
-                appData.gallery = parseCSV(gallery, ['id', 'title', 'image_url', 'date']);
-                appData.lastUpdate = new Date();
+                // Парсим данные
+                appData.important = parseCSV(important);
+                appData.chats = parseCSV(chats);
+                appData.schedule = parseCSV(schedule);
+                appData.hashtags = parseCSV(hashtags);
+                appData.gallery = parseCSV(gallery);
                 
-                console.log('Данные загружены:', appData);
+                console.log('✅ Данные загружены:', appData);
                 
                 // Обновляем интерфейс
                 renderAll();
+                updateCounters();
                 showLoading(false);
                 showUpdateIndicator();
                 
             } catch (error) {
-                console.error('Ошибка загрузки:', error);
+                console.error('❌ Ошибка загрузки:', error);
                 showLoading(false);
-                alert('Ошибка загрузки данных. Проверь ID таблицы.');
+                showError('Ошибка загрузки данных: ' + error.message);
             }
         }
         
-        // Загрузка листа по имени
+        // Загрузка конкретного листа
         async function fetchSheet(sheetName) {
-            const url = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?gid=0&single=true&sheet=${sheetName}&output=csv`;
-            try {
-                const response = await fetch(url);
-                return await response.text();
-            } catch (error) {
-                console.error(`Ошибка загрузки листа ${sheetName}:`, error);
-                return '';
+            const url = `${BASE_URL}&sheet=${sheetName}`;
+            console.log('Загрузка:', url);
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP ошибка ${response.status}`);
             }
+            return await response.text();
         }
         
         // Парсинг CSV в массив объектов
-        function parseCSV(csv, fields) {
+        function parseCSV(csv) {
             if (!csv) return [];
             
             const lines = csv.split('\n');
+            if (lines.length < 2) return [];
+            
+            // Заголовки - первая строка
+            const headers = lines[0].split(',').map(h => h.trim());
+            
             const result = [];
             
-            // Пропускаем заголовок (первая строка)
+            // Данные - остальные строки
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                // Разбиваем CSV с учётом кавычек
-                const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
-                const obj = {};
+                // Разбираем CSV с учётом кавычек
+                const values = [];
+                let inQuotes = false;
+                let currentValue = '';
                 
-                fields.forEach((field, index) => {
+                for (let char of line) {
+                    if (char === '"' && !inQuotes) {
+                        inQuotes = true;
+                    } else if (char === '"' && inQuotes) {
+                        inQuotes = false;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(currentValue);
+                        currentValue = '';
+                    } else {
+                        currentValue += char;
+                    }
+                }
+                values.push(currentValue);
+                
+                // Создаем объект
+                const obj = {};
+                headers.forEach((header, index) => {
                     let value = values[index] || '';
-                    // Убираем кавычки
-                    value = value.replace(/^"|"$/g, '');
-                    obj[field] = value.trim();
+                    // Убираем лишние кавычки и пробелы
+                    value = value.replace(/^"|"$/g, '').trim();
+                    obj[header] = value;
                 });
                 
-                result.push(obj);
+                // Проверяем, что объект не пустой
+                if (Object.values(obj).some(v => v)) {
+                    result.push(obj);
+                }
             }
             
             return result;
@@ -787,22 +845,22 @@
         
         // ========== ОТОБРАЖЕНИЕ ДАННЫХ ==========
         function renderAll() {
-            renderImportant();
-            renderChats();
-            renderSchedule();
-            renderHashtags();
-            renderGallery();
-            updateCounters();
+            renderMainPage();
+            renderChatsPage();
+            renderImportantPage();
+            renderSchedulePage();
+            renderHashtagsPage();
+            renderGalleryPage();
         }
         
-        function renderImportant() {
+        function renderMainPage() {
             const container = document.getElementById('tab-all');
             if (!container) return;
             
             let html = '';
             
             // Важная информация
-            if (appData.important.length > 0) {
+            if (appData.important && appData.important.length > 0) {
                 html += `
                     <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
@@ -814,10 +872,10 @@
                 
                 appData.important.forEach(item => {
                     html += `
-                        <div class="important-card" onclick="showImportantDetails(${item.id})">
-                            <div class="sender">${item.sender}</div>
-                            <div class="text">${item.text}</div>
-                            <div class="time">${item.time} • ${item.date}</div>
+                        <div class="important-card" onclick="showImportantDetails('${item.id}')">
+                            <div class="sender">${item.sender || 'Вы'}</div>
+                            <div class="text">${item.text || ''}</div>
+                            <div class="time">${item.time || ''} • ${item.date || ''}</div>
                         </div>
                     `;
                 });
@@ -826,7 +884,7 @@
             }
             
             // Расписание на сегодня
-            if (appData.schedule.length > 0) {
+            if (appData.schedule && appData.schedule.length > 0) {
                 html += `
                     <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
@@ -837,14 +895,20 @@
                             <div class="schedule-grid">
                 `;
                 
-                // Показываем первые 2-3 пары
-                appData.schedule.slice(0, 3).forEach(lesson => {
+                const today = new Date().toLocaleDateString('ru-RU', { weekday: 'long' });
+                const todayLessons = appData.schedule.filter(l => 
+                    l.day && l.day.toLowerCase().includes(today.toLowerCase())
+                );
+                
+                const lessonsToShow = todayLessons.length > 0 ? todayLessons : appData.schedule.slice(0, 3);
+                
+                lessonsToShow.forEach(lesson => {
                     html += `
-                        <div class="schedule-lesson" onclick="showLessonDetails(${lesson.id})">
-                            <div class="lesson-time">${lesson.time.split('-')[0]}</div>
+                        <div class="schedule-lesson" onclick="showLessonDetails('${lesson.id}')">
+                            <div class="lesson-time">${lesson.time ? lesson.time.split('-')[0] : ''}</div>
                             <div class="lesson-details">
-                                <div class="lesson-name">${lesson.subject}</div>
-                                <div class="lesson-place">${lesson.room} ауд.</div>
+                                <div class="lesson-name">${lesson.subject || ''}</div>
+                                <div class="lesson-place">${lesson.room || ''} ауд.</div>
                             </div>
                         </div>
                     `;
@@ -854,7 +918,7 @@
             }
             
             // Чаты
-            if (appData.chats.length > 0) {
+            if (appData.chats && appData.chats.length > 0) {
                 html += `
                     <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
@@ -867,15 +931,15 @@
                 appData.chats.forEach(chat => {
                     const isHidden = hiddenChats.includes(`chat-${chat.id}`);
                     html += `
-                        <div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat-${chat.id}" onclick="openChat(${chat.id})">
+                        <div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat-${chat.id}" onclick="openChat('${chat.id}')">
                             <div class="avatar">${chat.avatar || '💬'}</div>
                             <div class="info">
                                 <div class="title-row">
-                                    <span class="title">${chat.name}</span>
-                                    <span class="time">${chat.time}</span>
+                                    <span class="title">${chat.name || 'Чат'}</span>
+                                    <span class="time">${chat.time || ''}</span>
                                 </div>
                                 <div class="message">
-                                    <span class="sender">${chat.last_sender}:</span> ${chat.last_message}
+                                    <span class="sender">${chat.last_sender || ''}:</span> ${chat.last_message || ''}
                                 </div>
                             </div>
                             <span class="hide-btn" onclick="hideChat('chat-${chat.id}', event)">✕</span>
@@ -886,10 +950,10 @@
                 html += `</div></div>`;
             }
             
-            container.innerHTML = html;
+            container.innerHTML = html || '<div class="section" style="padding: 20px; text-align: center;">Нет данных</div>';
         }
         
-        function renderChats() {
+        function renderChatsPage() {
             const container = document.getElementById('tab-chats');
             if (!container) return;
             
@@ -899,39 +963,73 @@
                     <div class="section-content" id="chatsContainer2">
             `;
             
-            appData.chats.forEach(chat => {
-                const isHidden = hiddenChats.includes(`chat-${chat.id}`);
-                html += `
-                    <div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat2-${chat.id}" onclick="openChat(${chat.id})">
-                        <div class="avatar">${chat.avatar || '💬'}</div>
-                        <div class="info">
-                            <div class="title-row">
-                                <span class="title">${chat.name}</span>
-                                <span class="time">${chat.time}</span>
+            if (appData.chats && appData.chats.length > 0) {
+                appData.chats.forEach(chat => {
+                    const isHidden = hiddenChats.includes(`chat-${chat.id}`);
+                    html += `
+                        <div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat2-${chat.id}" onclick="openChat('${chat.id}')">
+                            <div class="avatar">${chat.avatar || '💬'}</div>
+                            <div class="info">
+                                <div class="title-row">
+                                    <span class="title">${chat.name || 'Чат'}</span>
+                                    <span class="time">${chat.time || ''}</span>
+                                </div>
+                                <div class="message">
+                                    <span class="sender">${chat.last_sender || ''}:</span> ${chat.last_message || ''}
+                                </div>
                             </div>
-                            <div class="message">
-                                <span class="sender">${chat.last_sender}:</span> ${chat.last_message}
-                            </div>
+                            <span class="hide-btn" onclick="hideChat('chat-${chat.id}', event)">✕</span>
                         </div>
-                        <span class="hide-btn" onclick="hideChat('chat-${chat.id}', event)">✕</span>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            } else {
+                html += '<div style="padding: 20px; text-align: center;">Нет чатов</div>';
+            }
             
             html += `</div></div>`;
             container.innerHTML = html;
         }
         
-        function renderSchedule() {
+        function renderImportantPage() {
+            const container = document.getElementById('tab-important');
+            if (!container) return;
+            
+            let html = `
+                <div class="section">
+                    <div class="section-header">📌 Вся важная информация</div>
+                    <div class="section-content">
+            `;
+            
+            if (appData.important && appData.important.length > 0) {
+                appData.important.forEach(item => {
+                    html += `
+                        <div class="important-card" onclick="showImportantDetails('${item.id}')">
+                            <div class="sender">${item.sender || 'Вы'}</div>
+                            <div class="text">${item.text || ''}</div>
+                            <div class="time">${item.time || ''} • ${item.date || ''}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<div style="padding: 20px; text-align: center;">Нет важной информации</div>';
+            }
+            
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+        
+        function renderSchedulePage() {
             const container = document.getElementById('tab-schedule');
             if (!container) return;
             
             // Группируем по дням
             const byDay = {};
-            appData.schedule.forEach(lesson => {
-                if (!byDay[lesson.day]) byDay[lesson.day] = [];
-                byDay[lesson.day].push(lesson);
-            });
+            if (appData.schedule) {
+                appData.schedule.forEach(lesson => {
+                    if (!byDay[lesson.day]) byDay[lesson.day] = [];
+                    byDay[lesson.day].push(lesson);
+                });
+            }
             
             let html = `
                 <div class="section">
@@ -940,36 +1038,42 @@
                         <div class="schedule-grid">
             `;
             
-            Object.keys(byDay).forEach(day => {
-                html += `<div class="schedule-day"><h3>${day}</h3>`;
-                byDay[day].forEach(lesson => {
-                    html += `
-                        <div class="schedule-lesson" onclick="showLessonDetails(${lesson.id})">
-                            <div class="lesson-time">${lesson.time}</div>
-                            <div class="lesson-details">
-                                <div class="lesson-name">${lesson.subject}</div>
-                                <div class="lesson-place">${lesson.room} ауд. • ${lesson.teacher}</div>
+            if (Object.keys(byDay).length > 0) {
+                Object.keys(byDay).forEach(day => {
+                    html += `<div class="schedule-day"><h3>${day}</h3>`;
+                    byDay[day].forEach(lesson => {
+                        html += `
+                            <div class="schedule-lesson" onclick="showLessonDetails('${lesson.id}')">
+                                <div class="lesson-time">${lesson.time || ''}</div>
+                                <div class="lesson-details">
+                                    <div class="lesson-name">${lesson.subject || ''}</div>
+                                    <div class="lesson-place">${lesson.room || ''} ауд. • ${lesson.teacher || ''}</div>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    });
+                    html += `</div>`;
                 });
-                html += `</div>`;
-            });
+            } else {
+                html += '<div style="padding: 20px; text-align: center;">Нет расписания</div>';
+            }
             
             html += `</div></div></div>`;
             container.innerHTML = html;
         }
         
-        function renderHashtags() {
+        function renderHashtagsPage() {
             const container = document.getElementById('tab-hashtags');
             if (!container) return;
             
             // Группируем по категориям
             const byCategory = {};
-            appData.hashtags.forEach(tag => {
-                if (!byCategory[tag.category]) byCategory[tag.category] = [];
-                byCategory[tag.category].push(tag.tag);
-            });
+            if (appData.hashtags) {
+                appData.hashtags.forEach(tag => {
+                    if (!byCategory[tag.category]) byCategory[tag.category] = [];
+                    byCategory[tag.category].push(tag.tag);
+                });
+            }
             
             let html = `
                 <div class="section">
@@ -977,27 +1081,31 @@
                     <div class="hashtags-container">
             `;
             
-            Object.keys(byCategory).forEach(category => {
-                html += `
-                    <div class="hashtag-category">
-                        <div class="category-title">${category}</div>
-                        <div class="hashtag-cloud">
-                `;
-                
-                byCategory[category].forEach(tag => {
-                    html += `<span class="hashtag" onclick="searchByHashtag('${tag}')">${tag}</span>`;
+            if (Object.keys(byCategory).length > 0) {
+                Object.keys(byCategory).forEach(category => {
+                    html += `
+                        <div class="hashtag-category">
+                            <div class="category-title">${category}</div>
+                            <div class="hashtag-cloud">
+                    `;
+                    
+                    byCategory[category].forEach(tag => {
+                        html += `<span class="hashtag" onclick="searchByHashtag('${tag}')">${tag}</span>`;
+                    });
+                    
+                    html += `</div></div>`;
                 });
-                
-                html += `</div></div>`;
-            });
+            } else {
+                html += '<div style="padding: 20px; text-align: center;">Нет хэштегов</div>';
+            }
             
             html += `</div></div>`;
             container.innerHTML = html;
         }
         
-        function renderGallery() {
+        function renderGalleryPage() {
             const container = document.getElementById('tab-gallery');
-            if (!container || appData.gallery.length === 0) return;
+            if (!container) return;
             
             let html = `
                 <div class="section">
@@ -1005,14 +1113,22 @@
                     <div class="gallery-grid">
             `;
             
-            appData.gallery.forEach(item => {
-                html += `
-                    <div class="gallery-item" onclick="window.open('${item.image_url}', '_blank')">
-                        <img src="${item.image_url}" onerror="this.src='https://via.placeholder.com/300x200/2a3942/00a884?text=Нет+изображения'">
-                        <div class="caption">${item.title}<br><small>${item.date}</small></div>
-                    </div>
-                `;
-            });
+            if (appData.gallery && appData.gallery.length > 0) {
+                appData.gallery.forEach(item => {
+                    const imgUrl = item.image_url && item.image_url !== 'https://example.com/image1.jpg' 
+                        ? item.image_url 
+                        : 'https://via.placeholder.com/300x200/2a3942/00a884?text=Нет+изображения';
+                    
+                    html += `
+                        <div class="gallery-item" onclick="window.open('${imgUrl}', '_blank')">
+                            <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/300x200/2a3942/00a884?text=Ошибка'">
+                            <div class="caption">${item.title || ''}<br><small>${item.date || ''}</small></div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<div style="padding: 20px; text-align: center;">Нет изображений</div>';
+            }
             
             html += `</div></div>`;
             container.innerHTML = html;
@@ -1020,21 +1136,19 @@
         
         // ========== ВЗАИМОДЕЙСТВИЕ ==========
         
-        // Переключение секций
         function toggleSection(header) {
             const content = header.nextElementSibling;
             const arrow = header.querySelector('span:last-child');
             
-            if (content.classList.contains('collapsed')) {
-                content.classList.remove('collapsed');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
                 arrow.textContent = '▼';
             } else {
-                content.classList.add('collapsed');
+                content.style.display = 'none';
                 arrow.textContent = '▶';
             }
         }
         
-        // Открыть чат
         function openChat(chatId) {
             const chat = appData.chats.find(c => c.id == chatId);
             if (!chat) return;
@@ -1043,23 +1157,18 @@
             const title = document.getElementById('modalChatTitle');
             const content = document.getElementById('modalChatContent');
             
-            title.textContent = chat.name;
+            title.textContent = chat.name || 'Чат';
             content.innerHTML = `
-                <div style="margin-bottom: 10px; color: #8696a0;">История сообщений:</div>
+                <div style="margin-bottom: 10px; color: #8696a0;">Последнее сообщение:</div>
                 <div style="margin-bottom: 10px;">
-                    <strong>${chat.last_sender}:</strong> ${chat.last_message}<br>
-                    <span style="color: #8696a0;">${chat.time}</span>
-                </div>
-                <div style="margin-top: 20px;">
-                    <input type="text" placeholder="Введите сообщение..." 
-                           style="width: 100%; padding: 10px; background-color: #1f2c33; border: 1px solid #2a3942; border-radius: 8px; color: #e9edef;">
+                    <strong>${chat.last_sender || ''}:</strong> ${chat.last_message || ''}<br>
+                    <span style="color: #8696a0;">${chat.time || ''}</span>
                 </div>
             `;
             
             modal.classList.add('active');
         }
         
-        // Скрыть чат
         function hideChat(chatId, event) {
             event.stopPropagation();
             
@@ -1076,21 +1185,9 @@
             updateCounters();
         }
         
-        // Показать все чаты
-        function showAllChats() {
-            hiddenChats = [];
-            localStorage.removeItem('hiddenChats');
-            
-            document.querySelectorAll('.chat-item').forEach(chat => {
-                chat.classList.remove('hidden');
-            });
-            
-            updateCounters();
-            closeModal('infoModal');
-        }
-        
-        // Обновить счетчики
         function updateCounters() {
+            if (!appData.chats) return;
+            
             const visibleChats = appData.chats.length - hiddenChats.length;
             const badge = document.getElementById('chatsBadge');
             if (badge) {
@@ -1099,7 +1196,6 @@
             }
         }
         
-        // Показать детали важной информации
         function showImportantDetails(id) {
             const item = appData.important.find(i => i.id == id);
             if (!item) return;
@@ -1110,15 +1206,14 @@
             
             title.textContent = 'Важная информация';
             content.innerHTML = `
-                <div style="margin-bottom: 10px;"><strong>${item.sender}</strong></div>
-                <div style="margin-bottom: 10px; font-size: 18px;">${item.text}</div>
-                <div style="color: #8696a0;">${item.time} • ${item.date}</div>
+                <div style="margin-bottom: 10px;"><strong>${item.sender || 'Вы'}</strong></div>
+                <div style="margin-bottom: 10px; font-size: 18px;">${item.text || ''}</div>
+                <div style="color: #8696a0;">${item.time || ''} • ${item.date || ''}</div>
             `;
             
             modal.classList.add('active');
         }
         
-        // Показать детали занятия
         function showLessonDetails(id) {
             const lesson = appData.schedule.find(l => l.id == id);
             if (!lesson) return;
@@ -1127,27 +1222,21 @@
             const title = document.getElementById('infoModalTitle');
             const content = document.getElementById('infoModalContent');
             
-            title.textContent = lesson.subject;
+            title.textContent = lesson.subject || 'Занятие';
             content.innerHTML = `
-                <div style="margin-bottom: 10px;">Время: ${lesson.time}</div>
-                <div style="margin-bottom: 10px;">Аудитория: ${lesson.room}</div>
-                <div style="margin-bottom: 10px;">Преподаватель: ${lesson.teacher}</div>
-                <div style="color: #8696a0;">${lesson.day}</div>
+                <div style="margin-bottom: 10px;">Время: ${lesson.time || ''}</div>
+                <div style="margin-bottom: 10px;">Аудитория: ${lesson.room || ''}</div>
+                <div style="margin-bottom: 10px;">Преподаватель: ${lesson.teacher || ''}</div>
+                <div style="color: #8696a0;">${lesson.day || ''}</div>
             `;
             
             modal.classList.add('active');
         }
         
-        // Поиск по хэштегу
         function searchByHashtag(tag) {
-            switchMainTab('home');
-            switchTab('all', null);
-            
-            // Подсвечиваем чаты с этим хэштегом
             alert(`Поиск по хэштегу: ${tag}`);
         }
         
-        // Переключение поиска
         function toggleSearch() {
             const searchBox = document.getElementById('searchBox');
             if (searchBox.style.display === 'none') {
@@ -1158,7 +1247,6 @@
             }
         }
         
-        // Поиск по чатам
         function searchChats() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             const chats = document.querySelectorAll('.chat-item');
@@ -1173,7 +1261,6 @@
             });
         }
         
-        // Показать меню
         function showMenu() {
             const modal = document.getElementById('infoModal');
             const title = document.getElementById('infoModalTitle');
@@ -1189,7 +1276,18 @@
             modal.classList.add('active');
         }
         
-        // Обновить данные
+        function showAllChats() {
+            hiddenChats = [];
+            localStorage.removeItem('hiddenChats');
+            
+            document.querySelectorAll('.chat-item').forEach(chat => {
+                chat.classList.remove('hidden');
+            });
+            
+            updateCounters();
+            closeModal('infoModal');
+        }
+        
         function refreshData() {
             closeModal('infoModal');
             loadAllData();
@@ -1264,6 +1362,13 @@
         function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'flex' : 'none';
             document.getElementById('app').style.display = show ? 'none' : 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('app').style.display = 'none';
         }
         
         function showUpdateIndicator() {
