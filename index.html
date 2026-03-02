@@ -1,1430 +1,878 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>КПСС — группа</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-        
-        body {
-            background-color: #2d2d2d;
-            color: #f0f0f0;
-            overflow-x: hidden;
-        }
-        
-        /* Загрузка */
-        .loading {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-size: 16px;
-            color: #ff99cc;
-            background-color: #2d2d2d;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            margin-top: 16px;
-            border: 3px solid #404040;
-            border-top-color: #ff99cc;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Главный контейнер */
-        .app-container {
-            display: flex;
-            height: 100vh;
-            width: 100%;
-            position: relative;
-        }
-        
-        /* Боковое меню */
-        .sidebar {
-            width: 280px;
-            background-color: #363636;
-            border-right: 1px solid #404040;
-            height: 100vh;
-            overflow-y: auto;
-            transition: transform 0.2s ease;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .sidebar.closed {
-            transform: translateX(-100%);
-        }
-        
-        .sidebar-header {
-            padding: 24px 20px;
-            border-bottom: 1px solid #404040;
-            background-color: #363636;
-        }
-        
-        .sidebar-header h2 {
-            font-size: 22px;
-            font-weight: 600;
-            color: #ff99cc;
-            letter-spacing: -0.3px;
-        }
-        
-        .sidebar-header span {
-            color: #b0b0b0;
-            font-size: 13px;
-            margin-top: 4px;
-            display: block;
-        }
-        
-        .sidebar-menu {
-            padding: 12px 0;
-        }
-        
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            gap: 14px;
-            color: #d0d0d0;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-            margin: 2px 0;
-        }
-        
-        .menu-item:hover {
-            background-color: #404040;
-            color: #ff99cc;
-        }
-        
-        .menu-item.active {
-            background-color: #404040;
-            border-left-color: #ff99cc;
-            color: #ff99cc;
-            font-weight: 500;
-        }
-        
-        .menu-item .icon {
-            font-size: 18px;
-            width: 24px;
-            text-align: center;
-        }
-        
-        .menu-item .badge {
-            background-color: #ff99cc;
-            color: #2d2d2d;
-            padding: 2px 8px;
-            border-radius: 30px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        
-        /* Основной контент */
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            width: calc(100% - 280px);
-            transition: margin-left 0.2s ease;
-            height: 100vh;
-            overflow-y: auto;
-            background-color: #2d2d2d;
-        }
-        
-        .main-content.expanded {
-            margin-left: 0;
-            width: 100%;
-        }
-        
-        /* Шапка */
-        .content-header {
-            background-color: #363636;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            border-bottom: 1px solid #404040;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .menu-toggle {
-            font-size: 20px;
-            cursor: pointer;
-            color: #b0b0b0;
-            background: none;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 8px;
-        }
-        
-        .menu-toggle:hover {
-            background-color: #404040;
-            color: #ff99cc;
-        }
-        
-        .content-header h1 {
-            font-size: 18px;
-            font-weight: 600;
-            flex: 1;
-            color: #ff99cc;
-        }
-        
-        .content-header span {
-            font-size: 13px;
-            color: #b0b0b0;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            color: #b0b0b0;
-        }
-        
-        .header-actions span {
-            cursor: pointer;
-            font-size: 18px;
-            padding: 6px;
-            border-radius: 8px;
-        }
-        
-        .header-actions span:hover {
-            background-color: #404040;
-            color: #ff99cc;
-        }
-        
-        /* Вкладки */
-        .tabs-container {
-            background-color: #363636;
-            border-bottom: 1px solid #404040;
-            position: sticky;
-            top: 60px;
-            z-index: 90;
-        }
-        
-        .tabs {
-            display: flex;
-            overflow-x: auto;
-            scrollbar-width: none;
-            padding: 0 12px;
-            gap: 4px;
-        }
-        
-        .tabs::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .tab {
-            padding: 12px 16px;
-            color: #b0b0b0;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            white-space: nowrap;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        
-        .tab:hover {
-            color: #ff99cc;
-        }
-        
-        .tab.active {
-            color: #ff99cc;
-            border-bottom-color: #ff99cc;
-        }
-        
-        /* Контент вкладок */
-        .tab-content {
-            display: none;
-            padding: 12px;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* Карточки */
-        .section {
-            background-color: #363636;
-            border-radius: 16px;
-            margin-bottom: 16px;
-            overflow: hidden;
-            border: 1px solid #404040;
-        }
-        
-        .section-header {
-            padding: 16px 20px;
-            color: #ff99cc;
-            font-size: 15px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid #404040;
-            cursor: pointer;
-        }
-        
-        .section-header span:first-child {
-            font-size: 18px;
-        }
-        
-        .section-header span:last-child {
-            margin-left: auto;
-            color: #808080;
-            font-size: 14px;
-        }
-        
-        .section-content {
-            padding: 4px 0;
-        }
-        
-        .section-content.collapsed {
-            display: none;
-        }
-        
-        /* Элементы чата */
-        .chat-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            background-color: #363636;
-            border-bottom: 1px solid #404040;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .chat-item:last-child {
-            border-bottom: none;
-        }
-        
-        .chat-item:hover {
-            background-color: #404040;
-        }
-        
-        .chat-item .avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background-color: #404040;
-            margin-right: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ff99cc;
-            font-size: 20px;
-            flex-shrink: 0;
-            border: 1px solid #505050;
-        }
-        
-        .chat-item .info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .chat-item .title-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-        
-        .chat-item .title {
-            font-size: 16px;
-            font-weight: 500;
-            color: #f0f0f0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .chat-item .time {
-            font-size: 11px;
-            color: #808080;
-            margin-left: 8px;
-            flex-shrink: 0;
-        }
-        
-        .chat-item .message {
-            color: #b0b0b0;
-            font-size: 13px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .chat-item .sender {
-            color: #ff99cc;
-            font-weight: 500;
-        }
-        
-        .chat-item .hide-btn {
-            color: #ff99cc;
-            font-size: 12px;
-            padding: 6px 10px;
-            border-radius: 30px;
-            background-color: #404040;
-            margin-left: 12px;
-            cursor: pointer;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        }
-        
-        .chat-item .hide-btn:hover {
-            opacity: 1;
-            background-color: #505050;
-        }
-        
-        .chat-item.hidden {
-            display: none;
-        }
-        
-        /* Важная информация */
-        .important-card {
-            background-color: #404040;
-            margin: 12px 16px;
-            padding: 16px;
-            border-radius: 14px;
-            border-left: 4px solid #ff99cc;
-        }
-        
-        .important-card .sender {
-            color: #ff99cc;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        
-        .important-card .text {
-            color: #f0f0f0;
-            font-size: 15px;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-        
-        .important-card .time {
-            color: #808080;
-            font-size: 11px;
-            text-align: right;
-        }
-        
-        .important-card .link {
-            display: inline-block;
-            margin-top: 8px;
-            color: #ff99cc;
-            text-decoration: none;
-            font-size: 13px;
-            border: 1px solid #ff99cc;
-            padding: 6px 12px;
-            border-radius: 20px;
-            transition: all 0.2s;
-        }
-        
-        .important-card .link:hover {
-            background-color: #ff99cc;
-            color: #2d2d2d;
-        }
-        
-        /* Расписание */
-        .schedule-grid {
-            padding: 12px 16px;
-        }
-        
-        .schedule-day {
-            margin-bottom: 20px;
-        }
-        
-        .schedule-day h3 {
-            color: #ff99cc;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        
-        .schedule-lesson {
-            display: flex;
-            gap: 16px;
-            padding: 12px 0;
-            border-bottom: 1px solid #404040;
-        }
-        
-        .schedule-lesson:last-child {
-            border-bottom: none;
-        }
-        
-        .lesson-time {
-            min-width: 75px;
-            color: #b0b0b0;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        
-        .lesson-details {
-            flex: 1;
-        }
-        
-        .lesson-name {
-            color: #f0f0f0;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-        
-        .lesson-place {
-            color: #808080;
-            font-size: 12px;
-        }
-        
-        /* Хэштеги */
-        .hashtags-container {
-            padding: 16px;
-        }
-        
-        .hashtag-category {
-            margin-bottom: 20px;
-        }
-        
-        .category-title {
-            color: #b0b0b0;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-        
-        .hashtag-cloud {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .hashtag {
-            background-color: #404040;
-            color: #ff99cc;
-            padding: 8px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #505050;
-        }
-        
-        .hashtag:hover {
-            background-color: #ff99cc;
-            color: #2d2d2d;
-            border-color: #ff99cc;
-        }
-        
-        /* Галерея */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            padding: 16px;
-        }
-        
-        .gallery-item {
-            background-color: #404040;
-            border-radius: 14px;
-            overflow: hidden;
-            cursor: pointer;
-            border: 1px solid #505050;
-            transition: all 0.2s;
-            aspect-ratio: 1/1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .gallery-item:hover {
-            transform: translateY(-2px);
-            border-color: #ff99cc;
-            box-shadow: 0 4px 12px rgba(255,153,204,0.2);
-        }
-        
-        .gallery-image {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-bottom: 1px solid #505050;
-            background-color: #363636;
-        }
-        
-        .gallery-caption {
-            padding: 12px;
-            font-size: 12px;
-            color: #f0f0f0;
-            text-align: center;
-            font-weight: 500;
-            background-color: #404040;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Модальное окно для картинок */
-        .image-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 3000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(8px);
-        }
-        
-        .image-modal.active {
-            display: flex;
-        }
-        
-        .image-modal-content {
-            max-width: 95%;
-            max-height: 95vh;
-            position: relative;
-        }
-        
-        .image-modal img {
-            max-width: 100%;
-            max-height: 95vh;
-            object-fit: contain;
-            border-radius: 8px;
-            border: 2px solid #ff99cc;
-        }
-        
-        .image-modal-close {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            color: #ff99cc;
-            font-size: 30px;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 10px;
-        }
-        
-        .image-modal-close:hover {
-            color: white;
-        }
-        
-        /* Поиск */
-        .search-box {
-            padding: 12px 16px;
-            background-color: #363636;
-            border-bottom: 1px solid #404040;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 14px 18px;
-            background-color: #404040;
-            border: 1px solid #505050;
-            border-radius: 30px;
-            color: #f0f0f0;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        
-        .search-box input:focus {
-            outline: none;
-            border-color: #ff99cc;
-            background-color: #454545;
-        }
-        
-        .search-box input::placeholder {
-            color: #808080;
-        }
-        
-        /* Модальные окна */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            background-color: #363636;
-            border-radius: 24px;
-            padding: 24px;
-            max-width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 380px;
-            border: 1px solid #505050;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            color: #ff99cc;
-            font-size: 18px;
-            font-weight: 600;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #404040;
-        }
-        
-        .modal-close {
-            font-size: 22px;
-            cursor: pointer;
-            color: #808080;
-            transition: color 0.2s;
-        }
-        
-        .modal-close:hover {
-            color: #ff99cc;
-        }
-        
-        .modal-body {
-            color: #f0f0f0;
-            line-height: 1.6;
-        }
-        
-        /* Индикатор обновления */
-        .update-indicator {
-            background-color: #ff99cc;
-            color: #2d2d2d;
-            padding: 10px 20px;
-            border-radius: 40px;
-            font-size: 13px;
-            font-weight: 600;
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            display: none;
-            z-index: 2000;
-            box-shadow: 0 4px 12px rgba(255,153,204,0.3);
-        }
-        
-        .update-indicator.show {
-            display: block;
-            animation: slideIn 0.3s;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateY(20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        /* Ошибка */
-        .error {
-            text-align: center;
-            padding: 40px 20px;
-            color: #ff99cc;
-            background-color: #2d2d2d;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .error h3 {
-            font-size: 18px;
-            margin-bottom: 12px;
-            color: #f0f0f0;
-        }
-        
-        .retry-btn {
-            background-color: #ff99cc;
-            color: #2d2d2d;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 40px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        
-        .retry-btn:hover {
-            background-color: #ffb3d9;
-            transform: translateY(-2px);
-        }
-        
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-            }
-            
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-            }
-            
-            .content-header h1 {
-                font-size: 16px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=yes" />
+  <title>КПСС — группа</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
+    body { background:#2d2d2d; color:#f0f0f0; overflow-x:hidden; }
+
+    .loading{display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;font-size:16px;color:#ff99cc;background:#2d2d2d;}
+    .spinner{width:40px;height:40px;margin-top:16px;border:3px solid #404040;border-top-color:#ff99cc;border-radius:50%;animation:spin 1s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .app-container{display:flex;height:100vh;width:100%;position:relative;}
+
+    .sidebar{width:280px;background:#363636;border-right:1px solid #404040;height:100vh;overflow-y:auto;transition:transform .2s ease;position:fixed;left:0;top:0;z-index:1000;}
+    .sidebar.closed{transform:translateX(-100%);}
+    .sidebar-header{padding:24px 20px;border-bottom:1px solid #404040;background:#363636;}
+    .sidebar-header h2{font-size:22px;font-weight:600;color:#ff99cc;letter-spacing:-.3px;}
+    .sidebar-header span{color:#b0b0b0;font-size:13px;margin-top:4px;display:block;}
+    .sidebar-menu{padding:12px 0;}
+    .menu-item{display:flex;align-items:center;padding:12px 20px;gap:14px;color:#d0d0d0;cursor:pointer;transition:all .2s;border-left:3px solid transparent;margin:2px 0;}
+    .menu-item:hover{background:#404040;color:#ff99cc;}
+    .menu-item.active{background:#404040;border-left-color:#ff99cc;color:#ff99cc;font-weight:500;}
+    .menu-item .icon{font-size:18px;width:24px;text-align:center;}
+    .menu-item .badge{background:#ff99cc;color:#2d2d2d;padding:2px 8px;border-radius:30px;font-size:11px;font-weight:600;}
+
+    .main-content{flex:1;margin-left:280px;width:calc(100% - 280px);transition:margin-left .2s ease;height:100vh;overflow-y:auto;background:#2d2d2d;}
+    .main-content.expanded{margin-left:0;width:100%;}
+
+    .content-header{background:#363636;padding:12px 20px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #404040;position:sticky;top:0;z-index:100;}
+    .menu-toggle{font-size:20px;cursor:pointer;color:#b0b0b0;background:none;border:none;padding:4px 8px;border-radius:8px;}
+    .menu-toggle:hover{background:#404040;color:#ff99cc;}
+    .content-header h1{font-size:18px;font-weight:600;flex:1;color:#ff99cc;}
+    .content-header span{font-size:13px;color:#b0b0b0;}
+    .header-actions{display:flex;gap:12px;color:#b0b0b0;}
+    .header-actions span{cursor:pointer;font-size:18px;padding:6px;border-radius:8px;}
+    .header-actions span:hover{background:#404040;color:#ff99cc;}
+
+    .tabs-container{background:#363636;border-bottom:1px solid #404040;position:sticky;top:60px;z-index:90;}
+    .tabs{display:flex;overflow-x:auto;scrollbar-width:none;padding:0 12px;gap:4px;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{padding:12px 16px;color:#b0b0b0;font-weight:500;font-size:14px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;}
+    .tab:hover{color:#ff99cc;}
+    .tab.active{color:#ff99cc;border-bottom-color:#ff99cc;}
+
+    .tab-content{display:none;padding:12px;}
+    .tab-content.active{display:block;}
+
+    .section{background:#363636;border-radius:16px;margin-bottom:16px;overflow:hidden;border:1px solid #404040;}
+    .section-header{padding:16px 20px;color:#ff99cc;font-size:15px;font-weight:600;display:flex;align-items:center;gap:10px;border-bottom:1px solid #404040;cursor:pointer;}
+    .section-header span:first-child{font-size:18px;}
+    .section-header span:last-child{margin-left:auto;color:#808080;font-size:14px;}
+    .section-content{padding:4px 0;}
+
+    .chat-item{display:flex;align-items:center;padding:12px 20px;background:#363636;border-bottom:1px solid #404040;cursor:pointer;transition:background-color .2s;}
+    .chat-item:last-child{border-bottom:none;}
+    .chat-item:hover{background:#404040;}
+    .chat-item .avatar{width:48px;height:48px;border-radius:50%;background:#404040;margin-right:14px;display:flex;align-items:center;justify-content:center;color:#ff99cc;font-size:20px;flex-shrink:0;border:1px solid #505050;}
+    .chat-item .info{flex:1;min-width:0;}
+    .chat-item .title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+    .chat-item .title{font-size:16px;font-weight:500;color:#f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .chat-item .time{font-size:11px;color:#808080;margin-left:8px;flex-shrink:0;}
+    .chat-item .message{color:#b0b0b0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .chat-item .sender{color:#ff99cc;font-weight:500;}
+    .chat-item .hide-btn{color:#ff99cc;font-size:12px;padding:6px 10px;border-radius:30px;background:#404040;margin-left:12px;cursor:pointer;opacity:.8;transition:opacity .2s;}
+    .chat-item .hide-btn:hover{opacity:1;background:#505050;}
+    .chat-item.hidden{display:none;}
+
+    .important-card{background:#404040;margin:12px 16px;padding:16px;border-radius:14px;border-left:4px solid #ff99cc;}
+    .important-card .sender{color:#ff99cc;font-size:13px;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px;}
+    .important-card .text{color:#f0f0f0;font-size:15px;margin-bottom:8px;line-height:1.4;}
+    .important-card .time{color:#808080;font-size:11px;text-align:right;}
+    .important-card .link{display:inline-block;margin-top:8px;color:#ff99cc;text-decoration:none;font-size:13px;border:1px solid #ff99cc;padding:6px 12px;border-radius:20px;transition:all .2s;}
+    .important-card .link:hover{background:#ff99cc;color:#2d2d2d;}
+
+    .schedule-grid{padding:12px 16px;}
+    .schedule-day{margin-bottom:20px;}
+    .schedule-day h3{color:#ff99cc;font-size:14px;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;}
+    .schedule-lesson{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid #404040;}
+    .schedule-lesson:last-child{border-bottom:none;}
+    .lesson-time{min-width:75px;color:#b0b0b0;font-size:13px;font-weight:500;}
+    .lesson-details{flex:1;}
+    .lesson-name{color:#f0f0f0;font-weight:500;margin-bottom:4px;}
+    .lesson-place{color:#808080;font-size:12px;}
+
+    .hashtags-container{padding:16px;}
+    .hashtag-category{margin-bottom:20px;}
+    .category-title{color:#b0b0b0;font-size:12px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:12px;font-weight:600;}
+    .hashtag-cloud{display:flex;flex-wrap:wrap;gap:8px;}
+    .hashtag{background:#404040;color:#ff99cc;padding:8px 14px;border-radius:30px;font-size:13px;cursor:pointer;transition:all .2s;border:1px solid #505050;}
+    .hashtag:hover{background:#ff99cc;color:#2d2d2d;border-color:#ff99cc;}
+
+    .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px;}
+    .gallery-item{background:#404040;border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid #505050;transition:all .2s;aspect-ratio:1/1;display:flex;flex-direction:column;}
+    .gallery-item:hover{transform:translateY(-2px);border-color:#ff99cc;box-shadow:0 4px 12px rgba(255,153,204,.2);}
+    .gallery-image{width:100%;height:120px;object-fit:cover;border-bottom:1px solid #505050;background:#363636;}
+    .gallery-caption{padding:12px;font-size:12px;color:#f0f0f0;text-align:center;font-weight:500;background:#404040;flex:1;display:flex;align-items:center;justify-content:center;}
+
+    .image-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:3000;justify-content:center;align-items:center;backdrop-filter:blur(8px);}
+    .image-modal.active{display:flex;}
+    .image-modal-content{max-width:95%;max-height:95vh;position:relative;}
+    .image-modal img{max-width:100%;max-height:95vh;object-fit:contain;border-radius:8px;border:2px solid #ff99cc;}
+    .image-modal-close{position:absolute;top:-40px;right:0;color:#ff99cc;font-size:30px;cursor:pointer;background:none;border:none;padding:10px;}
+    .image-modal-close:hover{color:#fff;}
+
+    .search-box{padding:12px 16px;background:#363636;border-bottom:1px solid #404040;}
+    .search-box input{width:100%;padding:14px 18px;background:#404040;border:1px solid #505050;border-radius:30px;color:#f0f0f0;font-size:14px;transition:all .2s;}
+    .search-box input:focus{outline:none;border-color:#ff99cc;background:#454545;}
+    .search-box input::placeholder{color:#808080;}
+
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;justify-content:center;align-items:center;backdrop-filter:blur(4px);}
+    .modal.active{display:flex;}
+    .modal-content{background:#363636;border-radius:24px;padding:24px;max-width:90%;max-height:80vh;overflow-y:auto;width:380px;border:1px solid #505050;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;color:#ff99cc;font-size:18px;font-weight:600;padding-bottom:12px;border-bottom:1px solid #404040;}
+    .modal-close{font-size:22px;cursor:pointer;color:#808080;transition:color .2s;}
+    .modal-close:hover{color:#ff99cc;}
+    .modal-body{color:#f0f0f0;line-height:1.6;}
+
+    .update-indicator{background:#ff99cc;color:#2d2d2d;padding:10px 20px;border-radius:40px;font-size:13px;font-weight:600;position:fixed;bottom:24px;right:24px;display:none;z-index:2000;box-shadow:0 4px 12px rgba(255,153,204,.3);}
+    .update-indicator.show{display:block;animation:slideIn .3s;}
+    @keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+    .error{text-align:center;padding:40px 20px;color:#ff99cc;background:#2d2d2d;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+    .error h3{font-size:18px;margin-bottom:12px;color:#f0f0f0;}
+    .retry-btn{background:#ff99cc;color:#2d2d2d;border:none;padding:14px 28px;border-radius:40px;margin-top:20px;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s;}
+    .retry-btn:hover{background:#ffb3d9;transform:translateY(-2px);}
+
+    @media (max-width:768px){
+      .sidebar{position:fixed;}
+      .main-content{margin-left:0;width:100%;}
+      .content-header h1{font-size:16px;}
+    }
+  </style>
 </head>
 <body>
-    <div class="loading" id="loading">
-        <div>Загрузка данных</div>
-        <div class="spinner"></div>
-    </div>
-    
-    <div class="error" id="error" style="display: none;">
-        <h3>⚠️ Ошибка загрузки</h3>
-        <div style="color: #b0b0b0; font-size: 14px; margin: 12px 0;" id="errorMessage"></div>
-        <button class="retry-btn" onclick="location.reload()">Повторить</button>
-    </div>
-    
-    <div class="app-container" id="app" style="display: none;">
-        <!-- Боковое меню -->
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>КПСС</h2>
-                <span id="membersCount">17 участников</span>
-            </div>
-            <div class="sidebar-menu">
-                <div class="menu-item active" onclick="switchMainTab('home'); closeSidebarOnMobile()">
-                    <span class="icon">🏠</span>
-                    <span class="title">Главная</span>
-                </div>
-                <div class="menu-item" onclick="switchMainTab('chats'); closeSidebarOnMobile()">
-                    <span class="icon">💬</span>
-                    <span class="title">Чаты</span>
-                    <span class="badge" id="chatsBadge">0</span>
-                </div>
-                <div class="menu-item" onclick="switchMainTab('schedule'); closeSidebarOnMobile()">
-                    <span class="icon">📅</span>
-                    <span class="title">Расписание</span>
-                </div>
-                <div class="menu-item" onclick="switchMainTab('hashtags'); closeSidebarOnMobile()">
-                    <span class="icon">✨</span>
-                    <span class="title">Хэштеги</span>
-                </div>
-                <div class="menu-item" onclick="switchMainTab('gallery'); closeSidebarOnMobile()">
-                    <span class="icon">🖼️</span>
-                    <span class="title">Галерея</span>
-                </div>
-                <div class="menu-item" onclick="switchMainTab('important'); closeSidebarOnMobile()">
-                    <span class="icon">📌</span>
-                    <span class="title">Важное</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Основной контент -->
-        <div class="main-content" id="mainContent">
-            <!-- Шапка -->
-            <div class="content-header">
-                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                <h1 id="mainTitle">КПСС</h1>
-                <span id="headerMembers">17 участников</span>
-                <div class="header-actions">
-                    <span onclick="toggleSearch()">🔍</span>
-                    <span onclick="showMenu()">⋮</span>
-                </div>
-            </div>
-            
-            <!-- Вкладки -->
-            <div class="tabs-container">
-                <div class="tabs" id="tabs">
-                    <div class="tab active" onclick="switchTab('all', this)">Все</div>
-                    <div class="tab" onclick="switchTab('chats', this)">Чаты</div>
-                    <div class="tab" onclick="switchTab('important', this)">Важное</div>
-                    <div class="tab" onclick="switchTab('schedule', this)">Расписание</div>
-                    <div class="tab" onclick="switchTab('gallery', this)">Галерея</div>
-                    <div class="tab" onclick="switchTab('hashtags', this)">Хэштеги</div>
-                </div>
-            </div>
-            
-            <!-- Поиск -->
-            <div class="search-box" id="searchBox" style="display: none;">
-                <input type="text" placeholder="Поиск по чатам..." id="searchInput" onkeyup="searchChats()">
-            </div>
-            
-            <!-- Контент -->
-            <div id="tabContent">
-                <div class="tab-content active" id="tab-all"></div>
-                <div class="tab-content" id="tab-chats"></div>
-                <div class="tab-content" id="tab-important"></div>
-                <div class="tab-content" id="tab-schedule"></div>
-                <div class="tab-content" id="tab-gallery"></div>
-                <div class="tab-content" id="tab-hashtags"></div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Модальные окна -->
-    <div class="modal" id="chatModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="modalChatTitle">Чат</span>
-                <span class="modal-close" onclick="closeModal('chatModal')">✕</span>
-            </div>
-            <div class="modal-body" id="modalChatContent"></div>
-        </div>
-    </div>
-    
-    <div class="modal" id="infoModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="infoModalTitle">Информация</span>
-                <span class="modal-close" onclick="closeModal('infoModal')">✕</span>
-            </div>
-            <div class="modal-body" id="infoModalContent"></div>
-        </div>
-    </div>
-    
-    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
-        <div class="image-modal-content">
-            <span class="image-modal-close" onclick="closeImageModal()">✕</span>
-            <img id="modalImage" src="" alt="">
-        </div>
-    </div>
-    
-    <div class="update-indicator" id="updateIndicator">Обновлено</div>
+  <div class="loading" id="loading">
+    <div>Загрузка данных</div>
+    <div class="spinner"></div>
+  </div>
 
-    <script>
-        // ========== ID ТАБЛИЦЫ ==========
-        const SPREADSHEET_ID = '2PACX-1vTqqPvylzn62Qvj834syJVyZH9bWKQjlsPYZdUjTZNt9R-AEQu36aOfCK9WU6CpA-B9535kNFka4l3t';
-        
-        // ========== РЕЗЕРВНЫЕ ДАННЫЕ ==========
-        const BACKUP_DATA = {
-            important: [
-                { id: '1', sender: 'Вы', text: 'В понедельник после 3 пары собрание в 301 аудитории', time: '14:00', date: '02.03.2026', link: 'https://t.me/kpss_group' },
-                { id: '2', sender: 'Вы', text: 'Фотография группового фото - сдать до пятницы', time: '14:44', date: '01.03.2026', link: '' },
-                { id: '3', sender: 'Староста', text: 'Завтра контрольная по математике', time: '09:15', date: '03.03.2026', link: 'https://docs.google.com/document/d/...' }
-            ],
-            chats: [
-                { id: '1', name: 'СВОбода слова', avatar: '📢', last_sender: 'захао', last_message: 'ново-оговорческий процесс...', time: '12:57' },
-                { id: '2', name: 'Опросы', avatar: '📊', last_sender: 'Mark', last_message: 'ахуели?', time: '16 фев' },
-                { id: '3', name: 'Аттракцион невиданной щедрости', avatar: '🎪', last_sender: 'Вы', last_message: 'Тема закрыта', time: '15 фев' },
-                { id: '4', name: 'Для тех кто у Антона проект...', avatar: '📝', last_sender: 'Вы', last_message: 'Тема закрыта', time: '15 фев' },
-                { id: '5', name: 'Презентации и тексты', avatar: '📎', last_sender: 'Вы', last_message: 'делаем пацаны', time: '15 фев' }
-            ],
-            schedule: [
-                { id: '1', day: 'Понедельник', time: '9:00-10:30', subject: 'Математика', room: '301', teacher: 'Иванов И.И.' },
-                { id: '2', day: 'Понедельник', time: '10:45-12:15', subject: 'Физика', room: '205', teacher: 'Петров П.П.' },
-                { id: '3', day: 'Вторник', time: '9:00-10:30', subject: 'Информатика', room: '410', teacher: 'Сидоров С.С.' },
-                { id: '4', day: 'Вторник', time: '10:45-12:15', subject: 'Английский', room: '207', teacher: 'Смирнова А.А.' },
-                { id: '5', day: 'Среда', time: '9:00-10:30', subject: 'История', room: '115', teacher: 'Кузнецов К.К.' }
-            ],
-            hashtags: [
-                { id: '1', category: 'Учебные предметы', tag: '#Английский' },
-                { id: '2', category: 'Учебные предметы', tag: '#Математика' },
-                { id: '3', category: 'Учебные предметы', tag: '#Физика' },
-                { id: '4', category: 'Учебные предметы', tag: '#Информатика' },
-                { id: '5', category: 'Учебные активности', tag: '#Контрольная' },
-                { id: '6', category: 'Учебные активности', tag: '#Зачёт' },
-                { id: '7', category: 'Учебные активности', tag: '#Проект' },
-                { id: '8', category: 'КПСС', tag: '#ВремяСтрадать' },
-                { id: '9', category: 'КПСС', tag: '#DeluxEdition' }
-            ],
-            gallery: [
-                { id: '1', title: 'Расписание марта', image_url: 'https://drive.google.com/uc?export=view&id=ВАШ_ID', date: '01.03.2026' },
-                { id: '2', title: 'Расписание экзаменов', image_url: 'https://i.imgur.com/ваша_картинка.jpg', date: '15.03.2026' },
-                { id: '3', title: 'Схема корпусов', image_url: 'https://example.com/map.jpg', date: '20.03.2026' }
-            ]
-        };
-        
-        // ========== ДАННЫЕ ПРИЛОЖЕНИЯ ==========
-        let appData = {
-            important: [],
-            chats: [],
-            schedule: [],
-            hashtags: [],
-            gallery: []
-        };
-        
-        let hiddenChats = [];
-        let loadAttempts = 0;
-        
-        // ========== ЗАГРУЗКА ==========
-        async function loadAllData() {
-            showLoading(true);
-            loadAttempts++;
-            
-            try {
-                const url = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv`;
-                
-                const response = await fetchWithTimeout(url);
-                
-                if (!response) {
-                    throw new Error('Нет ответа');
-                }
-                
-                const parsed = parseCSV(response);
-                
-                if (parsed.important.length > 0 || parsed.chats.length > 0) {
-                    appData = parsed;
-                    renderAll();
-                    updateCounters();
-                    showLoading(false);
-                    showUpdateIndicator();
-                } else {
-                    throw new Error('Нет данных');
-                }
-                
-            } catch (error) {
-                console.error('Ошибка:', error);
-                
-                if (loadAttempts < 3) {
-                    setTimeout(loadAllData, 1000);
-                } else {
-                    // Используем резервные данные
-                    appData = BACKUP_DATA;
-                    renderAll();
-                    updateCounters();
-                    showLoading(false);
-                    showError('Используются сохранённые данные');
-                }
-            }
+  <div class="error" id="error" style="display:none;">
+    <h3>⚠️ Ошибка загрузки</h3>
+    <div style="color:#b0b0b0;font-size:14px;margin:12px 0;" id="errorMessage"></div>
+    <button class="retry-btn" onclick="location.reload()">Повторить</button>
+  </div>
+
+  <div class="app-container" id="app" style="display:none;">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>КПСС</h2>
+        <span id="membersCount">—</span>
+      </div>
+      <div class="sidebar-menu">
+        <div class="menu-item active" onclick="switchMainTab('home'); closeSidebarOnMobile()">
+          <span class="icon">🏠</span><span class="title">Главная</span>
+        </div>
+        <div class="menu-item" onclick="switchMainTab('chats'); closeSidebarOnMobile()">
+          <span class="icon">💬</span><span class="title">Чаты</span>
+          <span class="badge" id="chatsBadge">0</span>
+        </div>
+        <div class="menu-item" onclick="switchMainTab('schedule'); closeSidebarOnMobile()">
+          <span class="icon">📅</span><span class="title">Расписание</span>
+        </div>
+        <div class="menu-item" onclick="switchMainTab('hashtags'); closeSidebarOnMobile()">
+          <span class="icon">✨</span><span class="title">Хэштеги</span>
+        </div>
+        <div class="menu-item" onclick="switchMainTab('gallery'); closeSidebarOnMobile()">
+          <span class="icon">🖼️</span><span class="title">Галерея</span>
+        </div>
+        <div class="menu-item" onclick="switchMainTab('important'); closeSidebarOnMobile()">
+          <span class="icon">📌</span><span class="title">Важное</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+      <div class="content-header">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h1 id="mainTitle">КПСС</h1>
+        <span id="headerMembers">—</span>
+        <div class="header-actions">
+          <span onclick="toggleSearch()">🔍</span>
+          <span onclick="showMenu()">⋮</span>
+        </div>
+      </div>
+
+      <div class="tabs-container">
+        <div class="tabs" id="tabs">
+          <div class="tab active" onclick="switchTab('all', this)">Все</div>
+          <div class="tab" onclick="switchTab('chats', this)">Чаты</div>
+          <div class="tab" onclick="switchTab('important', this)">Важное</div>
+          <div class="tab" onclick="switchTab('schedule', this)">Расписание</div>
+          <div class="tab" onclick="switchTab('gallery', this)">Галерея</div>
+          <div class="tab" onclick="switchTab('hashtags', this)">Хэштеги</div>
+        </div>
+      </div>
+
+      <div class="search-box" id="searchBox" style="display:none;">
+        <input type="text" placeholder="Поиск по чатам..." id="searchInput" onkeyup="searchChats()">
+      </div>
+
+      <div id="tabContent">
+        <div class="tab-content active" id="tab-all"></div>
+        <div class="tab-content" id="tab-chats"></div>
+        <div class="tab-content" id="tab-important"></div>
+        <div class="tab-content" id="tab-schedule"></div>
+        <div class="tab-content" id="tab-gallery"></div>
+        <div class="tab-content" id="tab-hashtags"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="chatModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="modalChatTitle">Чат</span>
+        <span class="modal-close" onclick="closeModal('chatModal')">✕</span>
+      </div>
+      <div class="modal-body" id="modalChatContent"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="infoModalTitle">Информация</span>
+        <span class="modal-close" onclick="closeModal('infoModal')">✕</span>
+      </div>
+      <div class="modal-body" id="infoModalContent"></div>
+    </div>
+  </div>
+
+  <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+    <div class="image-modal-content">
+      <span class="image-modal-close" onclick="closeImageModal()">✕</span>
+      <img id="modalImage" src="" alt="">
+    </div>
+  </div>
+
+  <div class="update-indicator" id="updateIndicator">Обновлено</div>
+
+  <script>
+    // ======== ПУБЛИЧНАЯ ССЫЛКА И ID (как у тебя) ========
+    const PUBLISHED_HTML_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTqqPvylzn62Qvj834syJVyZH9bWKQjlsPYZdUjTZNt9R-AEQu36aOfCK9WU6CpA-B9535kNFka4l3t/pubhtml";
+    const SPREADSHEET_ID = "2PACX-1vTqqPvylzn62Qvj834syJVyZH9bWKQjlsPYZdUjTZNt9R-AEQu36aOfCK9WU6CpA-B9535kNFka4l3t";
+
+    // ======== ДАННЫЕ ========
+    let appData = { important: [], chats: [], schedule: [], hashtags: [], gallery: [] };
+    let hiddenChats = [];
+    let loadAttempts = 0;
+
+    // ======== START ========
+    window.onload = function () {
+      const saved = localStorage.getItem("hiddenChats");
+      if (saved) hiddenChats = JSON.parse(saved);
+
+      loadAllData();
+      setInterval(() => { loadAttempts = 0; loadAllData(); }, 5 * 60 * 1000);
+
+      window.onclick = function (e) {
+        if (e.target.classList.contains("modal")) closeModal(e.target.id);
+        if (e.target.classList.contains("image-modal")) closeImageModal();
+      };
+    };
+
+    // ======== ЗАГРУЗКА ДАННЫХ ========
+    async function loadAllData() {
+      showLoading(true);
+      loadAttempts++;
+
+      try {
+        const pubhtml = await fetchWithTimeout(PUBLISHED_HTML_URL);
+        if (!pubhtml) throw new Error("Не удалось получить pubhtml");
+
+        // достаём все вкладки (gid + название) прямо из pubhtml
+        const sheets = extractSheetsFromPubhtml(pubhtml);
+        if (!sheets.length) throw new Error("Не найдено ни одной вкладки (gid) в pubhtml");
+
+        // временно соберём всё, что найдём
+        const temp = { important: [], chats: [], schedule: [], hashtags: [], gallery: [] };
+
+        // грузим все вкладки по gid, определяем тип по заголовкам
+        for (const sh of sheets) {
+          const csvUrl = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv&gid=${encodeURIComponent(sh.gid)}&single=true`;
+          const csvText = await fetchWithTimeout(csvUrl);
+          if (!csvText) continue;
+
+          const rows = parseCsv(csvText);
+          if (!rows || rows.length < 2) continue;
+
+          const headers = (rows[0] || []).map(h => (h ?? "").toString().trim());
+          const type = detectSheetType(headers);
+          if (!type) continue;
+
+          const data = rowsToObjects(rows, headers);
+          if (data.length) temp[type] = temp[type].concat(data);
         }
-        
-        async function fetchWithTimeout(url, timeout = 8000) {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeout);
-            
-            try {
-                const response = await fetch(url, {
-                    signal: controller.signal,
-                    cache: 'no-cache'
-                });
-                
-                clearTimeout(id);
-                return response.ok ? await response.text() : null;
-            } catch {
-                clearTimeout(id);
-                return null;
-            }
+
+        appData = temp;
+
+        if (hasData()) {
+          renderAll();
+          updateCounters();
+          showLoading(false);
+          showUpdateIndicator();
+        } else {
+          throw new Error("Нет данных (листы пустые или не распознаны по заголовкам)");
         }
-        
-        // ========== ПАРСИНГ CSV ==========
-        function parseCSV(csvText) {
-            const result = {
-                important: [],
-                chats: [],
-                schedule: [],
-                hashtags: [],
-                gallery: []
-            };
-            
-            if (!csvText) return result;
-            
-            const lines = csvText.split('\n');
-            let currentSheet = null;
-            let headers = [];
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                // Определяем начало нового листа
-                if (line.includes('important') && line.includes('id,sender,text,time,date')) {
-                    currentSheet = 'important';
-                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
-                    continue;
-                } else if (line.includes('chats') && line.includes('id,name,avatar,last_sender,last_message,time')) {
-                    currentSheet = 'chats';
-                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
-                    continue;
-                } else if (line.includes('schedule') && line.includes('id,day,time,subject,room,teacher')) {
-                    currentSheet = 'schedule';
-                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
-                    continue;
-                } else if (line.includes('hashtags') && line.includes('id,category,tag')) {
-                    currentSheet = 'hashtags';
-                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
-                    continue;
-                } else if (line.includes('gallery') && line.includes('id,title,image_url,date')) {
-                    currentSheet = 'gallery';
-                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
-                    continue;
-                }
-                
-                // Парсим строку данных
-                if (currentSheet && !line.includes('https://docs.google')) {
-                    const values = line.split(',').map(v => v.replace(/^"|"$/g, '').trim());
-                    const obj = {};
-                    
-                    headers.forEach((header, index) => {
-                        if (values[index]) {
-                            obj[header] = values[index];
-                        }
-                    });
-                    
-                    if (Object.keys(obj).length > 0 && obj.id) {
-                        result[currentSheet].push(obj);
-                    }
-                }
-            }
-            
-            return result;
+      } catch (err) {
+        console.error(err);
+
+        if (loadAttempts < 3) {
+          setTimeout(loadAllData, 1000);
+        } else {
+          showLoading(false);
+          showError("Не удалось загрузить данные");
         }
-        
-        // ========== ОТОБРАЖЕНИЕ ==========
-        function renderAll() {
-            renderMainPage();
-            renderChatsPage();
-            renderImportantPage();
-            renderSchedulePage();
-            renderHashtagsPage();
-            renderGalleryPage();
+      }
+    }
+
+    function hasData() {
+      return (appData.important?.length || 0) > 0 ||
+             (appData.chats?.length || 0) > 0 ||
+             (appData.schedule?.length || 0) > 0 ||
+             (appData.hashtags?.length || 0) > 0 ||
+             (appData.gallery?.length || 0) > 0;
+    }
+
+    // ======== ДОСТАЁМ GID И НАЗВАНИЯ ВКЛАДОК ИЗ pubhtml ========
+    function extractSheetsFromPubhtml(html) {
+      try {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const links = Array.from(doc.querySelectorAll("a[href*='gid=']"));
+
+        const found = new Map(); // gid -> title
+
+        for (const a of links) {
+          const href = a.getAttribute("href") || "";
+          const m = href.match(/gid=(\d+)/);
+          if (!m) continue;
+          const gid = m[1];
+          const title = (a.textContent || "").trim() || `gid_${gid}`;
+          if (!found.has(gid)) found.set(gid, title);
         }
-        
-        function renderMainPage() {
-            const container = document.getElementById('tab-all');
-            if (!container) return;
-            
-            let html = '';
-            
-            if (appData.important?.length > 0) {
-                html += `<div class="section"><div class="section-header" onclick="toggleSection(this)"><span>📌</span> Важное<span>▼</span></div><div class="section-content">`;
-                appData.important.slice(0, 3).forEach(item => {
-                    html += `<div class="important-card"><div class="sender">${item.sender || ''}</div><div class="text">${item.text || ''}</div>`;
-                    if (item.link) html += `<a href="${item.link}" target="_blank" class="link" onclick="event.stopPropagation()">🔗 Ссылка</a>`;
-                    html += `<div class="time">${item.time || ''} ${item.date ? '· '+item.date : ''}</div></div>`;
-                });
-                html += `</div></div>`;
-            }
-            
-            if (appData.schedule?.length > 0) {
-                html += `<div class="section"><div class="section-header" onclick="toggleSection(this)"><span>📅</span> Расписание<span>▼</span></div><div class="section-content"><div class="schedule-grid">`;
-                appData.schedule.slice(0, 3).forEach(lesson => {
-                    html += `<div class="schedule-lesson"><div class="lesson-time">${lesson.time?.split('-')[0] || ''}</div><div class="lesson-details"><div class="lesson-name">${lesson.subject || ''}</div><div class="lesson-place">${lesson.room || ''}</div></div></div>`;
-                });
-                html += `</div></div></div>`;
-            }
-            
-            if (appData.chats?.length > 0) {
-                html += `<div class="section"><div class="section-header" onclick="toggleSection(this)"><span>💬</span> Чаты<span>▼</span></div><div class="section-content" id="chatsContainer">`;
-                appData.chats.slice(0, 5).forEach(chat => {
-                    const isHidden = hiddenChats.includes(`chat-${chat.id}`);
-                    html += `<div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat-${chat.id}" onclick="openChat('${chat.id}')"><div class="avatar">${chat.avatar || '💬'}</div><div class="info"><div class="title-row"><span class="title">${chat.name || ''}</span><span class="time">${chat.time || ''}</span></div><div class="message"><span class="sender">${chat.last_sender || ''}:</span> ${(chat.last_message || '').substring(0, 40)}</div></div><span class="hide-btn" onclick="hideChat('chat-${chat.id}', event)">✕</span></div>`;
-                });
-                html += `</div></div>`;
-            }
-            
-            container.innerHTML = html || '<div class="section" style="padding: 20px; text-align: center;">Нет данных</div>';
+
+        // если ссылок нет, попробуем regex (на всякий)
+        if (!found.size) {
+          const re = /gid=(\d+)/g;
+          let m;
+          while ((m = re.exec(html)) !== null) {
+            const gid = m[1];
+            if (!found.has(gid)) found.set(gid, `gid_${gid}`);
+          }
         }
-        
-        function renderChatsPage() {
-            const container = document.getElementById('tab-chats');
-            if (!container || !appData.chats?.length) return;
-            
-            let html = `<div class="section"><div class="section-header">💬 Все чаты</div><div class="section-content">`;
-            appData.chats.forEach(chat => {
-                const isHidden = hiddenChats.includes(`chat-${chat.id}`);
-                html += `<div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat2-${chat.id}" onclick="openChat('${chat.id}')"><div class="avatar">${chat.avatar || '💬'}</div><div class="info"><div class="title-row"><span class="title">${chat.name || ''}</span><span class="time">${chat.time || ''}</span></div><div class="message"><span class="sender">${chat.last_sender || ''}:</span> ${chat.last_message || ''}</div></div><span class="hide-btn" onclick="hideChat('chat-${chat.id}', event)">✕</span></div>`;
-            });
-            html += `</div></div>`;
-            container.innerHTML = html;
+
+        return Array.from(found.entries()).map(([gid, title]) => ({ gid, title }));
+      } catch {
+        return [];
+      }
+    }
+
+    // ======== ОПРЕДЕЛЯЕМ ТИП ЛИСТА ПО ЗАГОЛОВКАМ (ТОЛЬКО ТО, ЧТО ЕСТЬ В ТАБЛИЦЕ) ========
+    function detectSheetType(headers) {
+      const h = headers.map(x => x.toLowerCase().trim());
+
+      // important: id,sender,text,time,date,(link optional)
+      if (h.includes("sender") && h.includes("text") && (h.includes("time") || h.includes("date"))) return "important";
+
+      // chats: id,name,avatar,last_sender,last_message,time
+      if (h.includes("name") && h.includes("last_sender") && h.includes("last_message")) return "chats";
+
+      // schedule: id,day,time,subject,room,teacher
+      if (h.includes("day") && h.includes("time") && h.includes("subject")) return "schedule";
+
+      // hashtags: id,category,tag
+      if (h.includes("category") && h.includes("tag")) return "hashtags";
+
+      // gallery: id,title,image_url,date
+      if (h.includes("title") && (h.includes("image_url") || h.includes("image"))) return "gallery";
+
+      return null;
+    }
+
+    function rowsToObjects(rows, headers) {
+      const out = [];
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.every(v => (v ?? "").toString().trim() === "")) continue;
+
+        const obj = {};
+        for (let j = 0; j < headers.length; j++) {
+          const key = (headers[j] ?? "").toString().trim();
+          if (!key) continue;
+          obj[key] = (row[j] ?? "").toString().trim();
         }
-        
-        function renderImportantPage() {
-            const container = document.getElementById('tab-important');
-            if (!container || !appData.important?.length) return;
-            
-            let html = `<div class="section"><div class="section-header">📌 Вся важная информация</div><div class="section-content">`;
-            appData.important.forEach(item => {
-                html += `<div class="important-card"><div class="sender">${item.sender || ''}</div><div class="text">${item.text || ''}</div>`;
-                if (item.link) html += `<a href="${item.link}" target="_blank" class="link">🔗 Ссылка</a>`;
-                html += `<div class="time">${item.time || ''} ${item.date ? '· '+item.date : ''}</div></div>`;
-            });
-            html += `</div></div>`;
-            container.innerHTML = html;
+        if (Object.keys(obj).length) out.push(obj);
+      }
+      return out;
+    }
+
+    // ======== НОРМАЛЬНЫЙ CSV ПАРСЕР ========
+    function parseCsv(text) {
+      const rows = [];
+      let row = [];
+      let cur = "";
+      let inQuotes = false;
+
+      text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (ch === '"') {
+          if (inQuotes && next === '"') {
+            cur += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
         }
-        
-        function renderSchedulePage() {
-            const container = document.getElementById('tab-schedule');
-            if (!container || !appData.schedule?.length) return;
-            
-            const byDay = {};
-            appData.schedule.forEach(lesson => {
-                if (lesson.day) {
-                    if (!byDay[lesson.day]) byDay[lesson.day] = [];
-                    byDay[lesson.day].push(lesson);
-                }
-            });
-            
-            let html = `<div class="section"><div class="section-header">📅 Полное расписание</div><div class="section-content"><div class="schedule-grid">`;
-            
-            Object.keys(byDay).forEach(day => {
-                html += `<div class="schedule-day"><h3>${day}</h3>`;
-                byDay[day].forEach(lesson => {
-                    html += `<div class="schedule-lesson"><div class="lesson-time">${lesson.time || ''}</div><div class="lesson-details"><div class="lesson-name">${lesson.subject || ''}</div><div class="lesson-place">${lesson.room || ''} ${lesson.teacher ? '· '+lesson.teacher : ''}</div></div></div>`;
-                });
-                html += `</div>`;
-            });
-            
-            html += `</div></div></div>`;
-            container.innerHTML = html;
+
+        if (ch === "," && !inQuotes) {
+          row.push(cur);
+          cur = "";
+          continue;
         }
-        
-        function renderHashtagsPage() {
-            const container = document.getElementById('tab-hashtags');
-            if (!container || !appData.hashtags?.length) return;
-            
-            const byCategory = {};
-            appData.hashtags.forEach(tag => {
-                if (tag.category) {
-                    if (!byCategory[tag.category]) byCategory[tag.category] = [];
-                    byCategory[tag.category].push(tag.tag);
-                }
-            });
-            
-            let html = `<div class="section"><div class="section-header">✨ Все хэштеги</div><div class="hashtags-container">`;
-            
-            Object.keys(byCategory).forEach(category => {
-                html += `<div class="hashtag-category"><div class="category-title">${category}</div><div class="hashtag-cloud">`;
-                byCategory[category].forEach(tag => {
-                    html += `<span class="hashtag" onclick="searchByHashtag('${tag}')">${tag}</span>`;
-                });
-                html += `</div></div>`;
-            });
-            
-            html += `</div></div>`;
-            container.innerHTML = html;
+
+        if (ch === "\n" && !inQuotes) {
+          row.push(cur);
+          rows.push(row);
+          row = [];
+          cur = "";
+          continue;
         }
-        
-        function renderGalleryPage() {
-            const container = document.getElementById('tab-gallery');
-            if (!container || !appData.gallery?.length) return;
-            
-            let html = `<div class="section"><div class="section-header">🖼️ Галерея</div><div class="gallery-grid">`;
-            
-            appData.gallery.forEach(item => {
-                const imgUrl = item.image_url || '';
-                html += `<div class="gallery-item" onclick="openImageModal('${imgUrl}')">`;
-                if (imgUrl) {
-                    html += `<img class="gallery-image" src="${imgUrl}" onerror="this.style.display='none'">`;
-                }
-                html += `<div class="gallery-caption">${item.title || ''}</div></div>`;
-            });
-            
-            html += `</div></div>`;
-            container.innerHTML = html;
-        }
-        
-        // ========== ФУНКЦИИ ==========
-        function toggleSection(header) {
-            const content = header.nextElementSibling;
-            const arrow = header.querySelector('span:last-child');
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                arrow.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                arrow.textContent = '▶';
-            }
-        }
-        
-        function openChat(chatId) {
-            const chat = appData.chats.find(c => c.id == chatId);
-            if (!chat) return;
-            
-            document.getElementById('modalChatTitle').textContent = chat.name || 'Чат';
-            document.getElementById('modalChatContent').innerHTML = `
-                <div style="background: #404040; padding: 16px; border-radius: 12px;">
-                    <div style="color: #ff99cc; margin-bottom: 8px;">${chat.last_sender || ''}</div>
-                    <div style="margin-bottom: 12px;">${chat.last_message || ''}</div>
-                    <div style="color: #808080;">${chat.time || ''}</div>
+
+        cur += ch;
+      }
+
+      row.push(cur);
+      rows.push(row);
+
+      while (rows.length && rows[rows.length - 1].every(v => (v ?? "").toString().trim() === "")) {
+        rows.pop();
+      }
+
+      return rows;
+    }
+
+    async function fetchWithTimeout(url, timeout = 10000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        const res = await fetch(url, { signal: controller.signal, cache: "no-cache" });
+        clearTimeout(id);
+        return res.ok ? await res.text() : null;
+      } catch {
+        clearTimeout(id);
+        return null;
+      }
+    }
+
+    // ======== РЕНДЕР ========
+    function renderAll() {
+      renderMainPage();
+      renderChatsPage();
+      renderImportantPage();
+      renderSchedulePage();
+      renderHashtagsPage();
+      renderGalleryPage();
+
+      // если у тебя реально есть участники в таблице — добавь колонку members_count на любом листе,
+      // но ты просил без затычек, поэтому просто ставим фикс “—”
+      document.getElementById("membersCount").textContent = "данные из таблицы";
+      document.getElementById("headerMembers").textContent = "данные из таблицы";
+    }
+
+    function renderMainPage() {
+      const container = document.getElementById("tab-all");
+      if (!container) return;
+
+      let html = "";
+
+      if (appData.important?.length) {
+        html += `<div class="section">
+          <div class="section-header" onclick="toggleSection(this)"><span>📌</span> Важное<span>▼</span></div>
+          <div class="section-content">`;
+        appData.important.slice(0, 3).forEach(item => {
+          html += `<div class="important-card">
+              <div class="sender">${escapeHtml(item.sender || "")}</div>
+              <div class="text">${escapeHtml(item.text || "")}</div>
+              ${item.link ? `<a href="${escapeAttr(item.link)}" target="_blank" class="link" onclick="event.stopPropagation()">🔗 Ссылка</a>` : ""}
+              <div class="time">${escapeHtml(item.time || "")} ${item.date ? "· " + escapeHtml(item.date) : ""}</div>
+            </div>`;
+        });
+        html += `</div></div>`;
+      }
+
+      if (appData.schedule?.length) {
+        html += `<div class="section">
+          <div class="section-header" onclick="toggleSection(this)"><span>📅</span> Расписание<span>▼</span></div>
+          <div class="section-content"><div class="schedule-grid">`;
+        appData.schedule.slice(0, 3).forEach(lesson => {
+          const start = (lesson.time || "").split("-")[0] || "";
+          html += `<div class="schedule-lesson">
+              <div class="lesson-time">${escapeHtml(start)}</div>
+              <div class="lesson-details">
+                <div class="lesson-name">${escapeHtml(lesson.subject || "")}</div>
+                <div class="lesson-place">${escapeHtml(lesson.room || "")}</div>
+              </div>
+            </div>`;
+        });
+        html += `</div></div></div>`;
+      }
+
+      if (appData.chats?.length) {
+        html += `<div class="section">
+          <div class="section-header" onclick="toggleSection(this)"><span>💬</span> Чаты<span>▼</span></div>
+          <div class="section-content">`;
+        appData.chats.slice(0, 5).forEach(chat => {
+          const id = `chat-${chat.id}`;
+          const isHidden = hiddenChats.includes(id);
+          html += `<div class="chat-item ${isHidden ? "hidden" : ""}" id="${id}" onclick="openChat('${escapeJs(chat.id)}')">
+              <div class="avatar">${escapeHtml(chat.avatar || "💬")}</div>
+              <div class="info">
+                <div class="title-row">
+                  <span class="title">${escapeHtml(chat.name || "")}</span>
+                  <span class="time">${escapeHtml(chat.time || "")}</span>
                 </div>
-            `;
-            document.getElementById('chatModal').classList.add('active');
+                <div class="message"><span class="sender">${escapeHtml(chat.last_sender || "")}:</span> ${escapeHtml((chat.last_message || "").substring(0, 40))}</div>
+              </div>
+              <span class="hide-btn" onclick="hideChat('${id}', event)">✕</span>
+            </div>`;
+        });
+        html += `</div></div>`;
+      }
+
+      container.innerHTML = html || `<div class="section" style="padding:20px;text-align:center;">Нет данных</div>`;
+    }
+
+    function renderChatsPage() {
+      const container = document.getElementById("tab-chats");
+      if (!container) return;
+
+      if (!appData.chats?.length) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет чатов</div>`;
+        return;
+      }
+
+      let html = `<div class="section"><div class="section-header">💬 Все чаты</div><div class="section-content">`;
+      appData.chats.forEach(chat => {
+        const id = `chat-${chat.id}`;
+        const isHidden = hiddenChats.includes(id);
+        html += `<div class="chat-item ${isHidden ? "hidden" : ""}" id="${id}-list" onclick="openChat('${escapeJs(chat.id)}')">
+            <div class="avatar">${escapeHtml(chat.avatar || "💬")}</div>
+            <div class="info">
+              <div class="title-row">
+                <span class="title">${escapeHtml(chat.name || "")}</span>
+                <span class="time">${escapeHtml(chat.time || "")}</span>
+              </div>
+              <div class="message"><span class="sender">${escapeHtml(chat.last_sender || "")}:</span> ${escapeHtml(chat.last_message || "")}</div>
+            </div>
+            <span class="hide-btn" onclick="hideChat('${id}', event)">✕</span>
+          </div>`;
+      });
+      html += `</div></div>`;
+      container.innerHTML = html;
+    }
+
+    function renderImportantPage() {
+      const container = document.getElementById("tab-important");
+      if (!container) return;
+
+      if (!appData.important?.length) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет важного</div>`;
+        return;
+      }
+
+      let html = `<div class="section"><div class="section-header">📌 Вся важная информация</div><div class="section-content">`;
+      appData.important.forEach(item => {
+        html += `<div class="important-card">
+            <div class="sender">${escapeHtml(item.sender || "")}</div>
+            <div class="text">${escapeHtml(item.text || "")}</div>
+            ${item.link ? `<a href="${escapeAttr(item.link)}" target="_blank" class="link">🔗 Ссылка</a>` : ""}
+            <div class="time">${escapeHtml(item.time || "")} ${item.date ? "· " + escapeHtml(item.date) : ""}</div>
+          </div>`;
+      });
+      html += `</div></div>`;
+      container.innerHTML = html;
+    }
+
+    function renderSchedulePage() {
+      const container = document.getElementById("tab-schedule");
+      if (!container) return;
+
+      if (!appData.schedule?.length) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет расписания</div>`;
+        return;
+      }
+
+      const byDay = {};
+      appData.schedule.forEach(lesson => {
+        const day = lesson.day || "";
+        if (!day) return;
+        if (!byDay[day]) byDay[day] = [];
+        byDay[day].push(lesson);
+      });
+
+      let html = `<div class="section"><div class="section-header">📅 Полное расписание</div><div class="section-content"><div class="schedule-grid">`;
+      Object.keys(byDay).forEach(day => {
+        html += `<div class="schedule-day"><h3>${escapeHtml(day)}</h3>`;
+        byDay[day].forEach(lesson => {
+          html += `<div class="schedule-lesson">
+              <div class="lesson-time">${escapeHtml(lesson.time || "")}</div>
+              <div class="lesson-details">
+                <div class="lesson-name">${escapeHtml(lesson.subject || "")}</div>
+                <div class="lesson-place">${escapeHtml(lesson.room || "")} ${lesson.teacher ? "· " + escapeHtml(lesson.teacher) : ""}</div>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      });
+      html += `</div></div></div>`;
+      container.innerHTML = html;
+    }
+
+    function renderHashtagsPage() {
+      const container = document.getElementById("tab-hashtags");
+      if (!container) return;
+
+      if (!appData.hashtags?.length) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет хэштегов</div>`;
+        return;
+      }
+
+      const byCategory = {};
+      appData.hashtags.forEach(t => {
+        const cat = t.category || "Другое";
+        const tag = t.tag || "";
+        if (!tag) return;
+        if (!byCategory[cat]) byCategory[cat] = [];
+        byCategory[cat].push(tag);
+      });
+
+      let html = `<div class="section"><div class="section-header">✨ Все хэштеги</div><div class="hashtags-container">`;
+      Object.keys(byCategory).forEach(category => {
+        html += `<div class="hashtag-category">
+            <div class="category-title">${escapeHtml(category)}</div>
+            <div class="hashtag-cloud">`;
+        byCategory[category].forEach(tag => {
+          html += `<span class="hashtag" onclick="searchByHashtag('${escapeJs(tag)}')">${escapeHtml(tag)}</span>`;
+        });
+        html += `</div></div>`;
+      });
+      html += `</div></div>`;
+      container.innerHTML = html;
+    }
+
+    function renderGalleryPage() {
+      const container = document.getElementById("tab-gallery");
+      if (!container) return;
+
+      if (!appData.gallery?.length) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет галереи</div>`;
+        return;
+      }
+
+      let html = `<div class="section"><div class="section-header">🖼️ Галерея</div><div class="gallery-grid">`;
+      appData.gallery.forEach(item => {
+        const imgUrl = item.image_url || item.image || "";
+        html += `<div class="gallery-item" onclick="openImageModal('${escapeJs(imgUrl)}')">`;
+        if (imgUrl) {
+          html += `<img class="gallery-image" src="${escapeAttr(imgUrl)}" onerror="this.style.display='none'">`;
         }
-        
-        function hideChat(chatId, event) {
-            event.stopPropagation();
-            const chat = document.getElementById(chatId);
-            if (chat) {
-                chat.classList.add('hidden');
-                if (!hiddenChats.includes(chatId)) {
-                    hiddenChats.push(chatId);
-                    localStorage.setItem('hiddenChats', JSON.stringify(hiddenChats));
-                }
-            }
-            updateCounters();
-        }
-        
-        function updateCounters() {
-            if (!appData.chats) return;
-            const visible = appData.chats.length - hiddenChats.length;
-            const badge = document.getElementById('chatsBadge');
-            if (badge) {
-                badge.textContent = visible;
-                badge.style.display = visible > 0 ? 'inline' : 'none';
-            }
-        }
-        
-        function openImageModal(imageUrl) {
-            if (!imageUrl) return;
-            document.getElementById('modalImage').src = imageUrl;
-            document.getElementById('imageModal').classList.add('active');
-        }
-        
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.remove('active');
-        }
-        
-        function searchByHashtag(tag) {
-            document.getElementById('infoModalTitle').textContent = 'Хэштег';
-            document.getElementById('infoModalContent').innerHTML = `<div style="text-align: center; padding: 20px;"><span class="hashtag">${tag}</span></div>`;
-            document.getElementById('infoModal').classList.add('active');
-        }
-        
-        function toggleSearch() {
-            const box = document.getElementById('searchBox');
-            box.style.display = box.style.display === 'none' ? 'block' : 'none';
-            if (box.style.display === 'block') document.getElementById('searchInput').focus();
-        }
-        
-        function searchChats() {
-            const text = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('.chat-item').forEach(chat => {
-                const title = chat.querySelector('.title')?.textContent.toLowerCase() || '';
-                chat.style.display = title.includes(text) ? 'flex' : 'none';
-            });
-        }
-        
-        function showMenu() {
-            document.getElementById('infoModalTitle').textContent = 'Меню';
-            document.getElementById('infoModalContent').innerHTML = `
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div onclick="showAllChats()" style="padding: 12px; background: #404040; border-radius: 12px; cursor: pointer;">Показать все чаты</div>
-                    <div onclick="refreshData()" style="padding: 12px; background: #404040; border-radius: 12px; cursor: pointer;">Обновить</div>
-                    <div onclick="location.reload()" style="padding: 12px; background: #404040; border-radius: 12px; cursor: pointer;">Перезагрузить</div>
-                </div>
-            `;
-            document.getElementById('infoModal').classList.add('active');
-        }
-        
-        function showAllChats() {
-            hiddenChats = [];
-            localStorage.removeItem('hiddenChats');
-            document.querySelectorAll('.chat-item').forEach(c => c.classList.remove('hidden'));
-            updateCounters();
-            closeModal('infoModal');
-        }
-        
-        function refreshData() {
-            closeModal('infoModal');
-            loadAttempts = 0;
-            loadAllData();
-        }
-        
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('closed');
-            document.getElementById('mainContent').classList.toggle('expanded');
-        }
-        
-        function closeSidebarOnMobile() {
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.add('closed');
-                document.getElementById('mainContent').classList.add('expanded');
-            }
-        }
-        
-        function switchMainTab(tabName) {
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            
-            const titles = {home: 'КПСС', chats: 'Чаты', schedule: 'Расписание', hashtags: 'Хэштеги', gallery: 'Галерея', important: 'Важное'};
-            document.getElementById('mainTitle').textContent = titles[tabName];
-            
-            if (tabName === 'home') switchTab('all', document.querySelector('.tab'));
-            else switchTab(tabName, null);
-        }
-        
-        function switchTab(tabName, element) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            
-            if (element) element.classList.add('active');
-            else {
-                document.querySelectorAll('.tab').forEach(t => {
-                    if (t.textContent.toLowerCase().includes(tabName)) t.classList.add('active');
-                });
-            }
-            
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            const validTabs = ['all', 'chats', 'important', 'schedule', 'gallery', 'hashtags'];
-            if (validTabs.includes(tabName)) document.getElementById(`tab-${tabName}`).classList.add('active');
-            else document.getElementById('tab-all').classList.add('active');
-        }
-        
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'flex' : 'none';
-            document.getElementById('app').style.display = show ? 'none' : 'block';
-            document.getElementById('error').style.display = 'none';
-        }
-        
-        function showError(message) {
-            document.getElementById('error').style.display = 'block';
-            document.getElementById('errorMessage').textContent = message;
-        }
-        
-        function showUpdateIndicator() {
-            const ind = document.getElementById('updateIndicator');
-            ind.classList.add('show');
-            setTimeout(() => ind.classList.remove('show'), 2000);
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-        
-        // ========== СТАРТ ==========
-        window.onload = function() {
-            const saved = localStorage.getItem('hiddenChats');
-            if (saved) hiddenChats = JSON.parse(saved);
-            
-            loadAllData();
-            
-            window.onclick = function(e) {
-                if (e.target.classList.contains('modal')) closeModal(e.target.id);
-                if (e.target.classList.contains('image-modal')) closeImageModal();
-            };
-            
-            setInterval(() => { loadAttempts = 0; loadAllData(); }, 5 * 60 * 1000);
-        };
-    </script>
+        html += `<div class="gallery-caption">${escapeHtml(item.title || "")}</div></div>`;
+      });
+      html += `</div></div>`;
+      container.innerHTML = html;
+    }
+
+    // ======== UI / ACTIONS ========
+    function toggleSection(header) {
+      const content = header.nextElementSibling;
+      const arrow = header.querySelector("span:last-child");
+      if (!content) return;
+      if (content.style.display === "none") {
+        content.style.display = "block";
+        if (arrow) arrow.textContent = "▼";
+      } else {
+        content.style.display = "none";
+        if (arrow) arrow.textContent = "▶";
+      }
+    }
+
+    function openChat(chatId) {
+      const chat = (appData.chats || []).find(c => String(c.id) === String(chatId));
+      if (!chat) return;
+
+      document.getElementById("modalChatTitle").textContent = chat.name || "Чат";
+      document.getElementById("modalChatContent").innerHTML = `
+        <div style="background:#404040;padding:16px;border-radius:12px;">
+          <div style="color:#ff99cc;margin-bottom:8px;">${escapeHtml(chat.last_sender || "")}</div>
+          <div style="margin-bottom:12px;">${escapeHtml(chat.last_message || "")}</div>
+          <div style="color:#808080;">${escapeHtml(chat.time || "")}</div>
+        </div>
+      `;
+      document.getElementById("chatModal").classList.add("active");
+    }
+
+    function hideChat(chatId, event) {
+      event.stopPropagation();
+
+      // прячем карточку на главной
+      const el1 = document.getElementById(chatId);
+      if (el1) el1.classList.add("hidden");
+
+      // прячем карточку в списке
+      const el2 = document.getElementById(chatId + "-list");
+      if (el2) el2.classList.add("hidden");
+
+      if (!hiddenChats.includes(chatId)) {
+        hiddenChats.push(chatId);
+        localStorage.setItem("hiddenChats", JSON.stringify(hiddenChats));
+      }
+      updateCounters();
+    }
+
+    function updateCounters() {
+      const total = (appData.chats || []).length;
+      const visible = Math.max(0, total - hiddenChats.length);
+      const badge = document.getElementById("chatsBadge");
+      if (badge) {
+        badge.textContent = visible;
+        badge.style.display = visible > 0 ? "inline" : "none";
+      }
+    }
+
+    function openImageModal(imageUrl) {
+      if (!imageUrl) return;
+      document.getElementById("modalImage").src = imageUrl;
+      document.getElementById("imageModal").classList.add("active");
+    }
+
+    function closeImageModal() {
+      document.getElementById("imageModal").classList.remove("active");
+    }
+
+    function searchByHashtag(tag) {
+      document.getElementById("infoModalTitle").textContent = "Хэштег";
+      document.getElementById("infoModalContent").innerHTML =
+        `<div style="text-align:center;padding:20px;"><span class="hashtag">${escapeHtml(tag)}</span></div>`;
+      document.getElementById("infoModal").classList.add("active");
+    }
+
+    function toggleSearch() {
+      const box = document.getElementById("searchBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+      if (box.style.display === "block") document.getElementById("searchInput").focus();
+    }
+
+    function searchChats() {
+      const text = (document.getElementById("searchInput").value || "").toLowerCase();
+      document.querySelectorAll(".chat-item").forEach(chat => {
+        const title = (chat.querySelector(".title")?.textContent || "").toLowerCase();
+        chat.style.display = title.includes(text) ? "flex" : "none";
+      });
+    }
+
+    function showMenu() {
+      document.getElementById("infoModalTitle").textContent = "Меню";
+      document.getElementById("infoModalContent").innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div onclick="showAllChats()" style="padding:12px;background:#404040;border-radius:12px;cursor:pointer;">Показать все чаты</div>
+          <div onclick="refreshData()" style="padding:12px;background:#404040;border-radius:12px;cursor:pointer;">Обновить</div>
+          <div onclick="location.reload()" style="padding:12px;background:#404040;border-radius:12px;cursor:pointer;">Перезагрузить</div>
+        </div>
+      `;
+      document.getElementById("infoModal").classList.add("active");
+    }
+
+    function showAllChats() {
+      hiddenChats = [];
+      localStorage.removeItem("hiddenChats");
+      document.querySelectorAll(".chat-item").forEach(c => c.classList.remove("hidden"));
+      updateCounters();
+      closeModal("infoModal");
+    }
+
+    function refreshData() {
+      closeModal("infoModal");
+      loadAttempts = 0;
+      loadAllData();
+    }
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+      document.getElementById("mainContent").classList.toggle("expanded");
+    }
+
+    function closeSidebarOnMobile() {
+      if (window.innerWidth <= 768) {
+        document.getElementById("sidebar").classList.add("closed");
+        document.getElementById("mainContent").classList.add("expanded");
+      }
+    }
+
+    function switchMainTab(tabName) {
+      document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
+      event.currentTarget.classList.add("active");
+
+      const titles = { home: "КПСС", chats: "Чаты", schedule: "Расписание", hashtags: "Хэштеги", gallery: "Галерея", important: "Важное" };
+      document.getElementById("mainTitle").textContent = titles[tabName] || "КПСС";
+
+      if (tabName === "home") switchTab("all", document.querySelector(".tab"));
+      else switchTab(tabName, null);
+    }
+
+    function switchTab(tabName, element) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+
+      if (element) element.classList.add("active");
+      else {
+        document.querySelectorAll(".tab").forEach(t => {
+          if (t.textContent.toLowerCase().includes(tabName)) t.classList.add("active");
+        });
+      }
+
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+
+      const validTabs = ["all", "chats", "important", "schedule", "gallery", "hashtags"];
+      if (validTabs.includes(tabName)) document.getElementById(`tab-${tabName}`).classList.add("active");
+      else document.getElementById("tab-all").classList.add("active");
+    }
+
+    function showLoading(show) {
+      document.getElementById("loading").style.display = show ? "flex" : "none";
+      document.getElementById("app").style.display = show ? "none" : "block";
+      document.getElementById("error").style.display = "none";
+    }
+
+    function showError(message) {
+      document.getElementById("error").style.display = "block";
+      document.getElementById("errorMessage").textContent = message;
+      document.getElementById("app").style.display = "none";
+      document.getElementById("loading").style.display = "none";
+    }
+
+    function showUpdateIndicator() {
+      const ind = document.getElementById("updateIndicator");
+      ind.classList.add("show");
+      setTimeout(() => ind.classList.remove("show"), 2000);
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove("active");
+    }
+
+    // ======== XSS SAFE HELPERS ========
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    function escapeAttr(s) {
+      return escapeHtml(s).replace(/"/g, "&quot;");
+    }
+    function escapeJs(s) {
+      return String(s ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+    }
+  </script>
 </body>
 </html>
