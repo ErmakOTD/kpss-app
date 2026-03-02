@@ -925,6 +925,45 @@
         // ========== ID ТАБЛИЦЫ ==========
         const SPREADSHEET_ID = '2PACX-1vTqqPvylzn62Qvj834syJVyZH9bWKQjlsPYZdUjTZNt9R-AEQu36aOfCK9WU6CpA-B9535kNFka4l3t';
         
+        // ========== РЕЗЕРВНЫЕ ДАННЫЕ ==========
+        const BACKUP_DATA = {
+            important: [
+                { id: '1', sender: 'Вы', text: 'В понедельник после 3 пары собрание в 301 аудитории', time: '14:00', date: '02.03.2026', link: 'https://t.me/kpss_group' },
+                { id: '2', sender: 'Вы', text: 'Фотография группового фото - сдать до пятницы', time: '14:44', date: '01.03.2026', link: '' },
+                { id: '3', sender: 'Староста', text: 'Завтра контрольная по математике', time: '09:15', date: '03.03.2026', link: 'https://docs.google.com/document/d/...' }
+            ],
+            chats: [
+                { id: '1', name: 'СВОбода слова', avatar: '📢', last_sender: 'захао', last_message: 'ново-оговорческий процесс...', time: '12:57' },
+                { id: '2', name: 'Опросы', avatar: '📊', last_sender: 'Mark', last_message: 'ахуели?', time: '16 фев' },
+                { id: '3', name: 'Аттракцион невиданной щедрости', avatar: '🎪', last_sender: 'Вы', last_message: 'Тема закрыта', time: '15 фев' },
+                { id: '4', name: 'Для тех кто у Антона проект...', avatar: '📝', last_sender: 'Вы', last_message: 'Тема закрыта', time: '15 фев' },
+                { id: '5', name: 'Презентации и тексты', avatar: '📎', last_sender: 'Вы', last_message: 'делаем пацаны', time: '15 фев' }
+            ],
+            schedule: [
+                { id: '1', day: 'Понедельник', time: '9:00-10:30', subject: 'Математика', room: '301', teacher: 'Иванов И.И.' },
+                { id: '2', day: 'Понедельник', time: '10:45-12:15', subject: 'Физика', room: '205', teacher: 'Петров П.П.' },
+                { id: '3', day: 'Вторник', time: '9:00-10:30', subject: 'Информатика', room: '410', teacher: 'Сидоров С.С.' },
+                { id: '4', day: 'Вторник', time: '10:45-12:15', subject: 'Английский', room: '207', teacher: 'Смирнова А.А.' },
+                { id: '5', day: 'Среда', time: '9:00-10:30', subject: 'История', room: '115', teacher: 'Кузнецов К.К.' }
+            ],
+            hashtags: [
+                { id: '1', category: 'Учебные предметы', tag: '#Английский' },
+                { id: '2', category: 'Учебные предметы', tag: '#Математика' },
+                { id: '3', category: 'Учебные предметы', tag: '#Физика' },
+                { id: '4', category: 'Учебные предметы', tag: '#Информатика' },
+                { id: '5', category: 'Учебные активности', tag: '#Контрольная' },
+                { id: '6', category: 'Учебные активности', tag: '#Зачёт' },
+                { id: '7', category: 'Учебные активности', tag: '#Проект' },
+                { id: '8', category: 'КПСС', tag: '#ВремяСтрадать' },
+                { id: '9', category: 'КПСС', tag: '#DeluxEdition' }
+            ],
+            gallery: [
+                { id: '1', title: 'Расписание марта', image_url: 'https://drive.google.com/uc?export=view&id=ВАШ_ID', date: '01.03.2026' },
+                { id: '2', title: 'Расписание экзаменов', image_url: 'https://i.imgur.com/ваша_картинка.jpg', date: '15.03.2026' },
+                { id: '3', title: 'Схема корпусов', image_url: 'https://example.com/map.jpg', date: '20.03.2026' }
+            ]
+        };
+        
         // ========== ДАННЫЕ ПРИЛОЖЕНИЯ ==========
         let appData = {
             important: [],
@@ -951,9 +990,10 @@
                     throw new Error('Нет ответа');
                 }
                 
-                parseAllSheets(response);
+                const parsed = parseCSV(response);
                 
-                if (hasData()) {
+                if (parsed.important.length > 0 || parsed.chats.length > 0) {
+                    appData = parsed;
                     renderAll();
                     updateCounters();
                     showLoading(false);
@@ -968,8 +1008,12 @@
                 if (loadAttempts < 3) {
                     setTimeout(loadAllData, 1000);
                 } else {
+                    // Используем резервные данные
+                    appData = BACKUP_DATA;
+                    renderAll();
+                    updateCounters();
                     showLoading(false);
-                    showError('Не удалось загрузить данные');
+                    showError('Используются сохранённые данные');
                 }
             }
         }
@@ -992,81 +1036,67 @@
             }
         }
         
-        function hasData() {
-            return appData.important.length > 0 || 
-                   appData.chats.length > 0 || 
-                   appData.schedule.length > 0 || 
-                   appData.hashtags.length > 0 || 
-                   appData.gallery.length > 0;
-        }
-        
-        // ========== ПАРСИНГ ==========
-        function parseAllSheets(csvData) {
-            const lines = csvData.split('\n');
+        // ========== ПАРСИНГ CSV ==========
+        function parseCSV(csvText) {
+            const result = {
+                important: [],
+                chats: [],
+                schedule: [],
+                hashtags: [],
+                gallery: []
+            };
+            
+            if (!csvText) return result;
+            
+            const lines = csvText.split('\n');
             let currentSheet = null;
-            let sheetData = [];
+            let headers = [];
             
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
+                if (!line) continue;
                 
+                // Определяем начало нового листа
                 if (line.includes('important') && line.includes('id,sender,text,time,date')) {
-                    if (currentSheet) saveSheetData(currentSheet, sheetData);
                     currentSheet = 'important';
-                    sheetData = [lines[i]];
-                }
-                else if (line.includes('chats') && line.includes('id,name,avatar,last_sender,last_message,time,hidden')) {
-                    if (currentSheet) saveSheetData(currentSheet, sheetData);
+                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
+                    continue;
+                } else if (line.includes('chats') && line.includes('id,name,avatar,last_sender,last_message,time')) {
                     currentSheet = 'chats';
-                    sheetData = [lines[i]];
-                }
-                else if (line.includes('schedule') && line.includes('id,day,time,subject,room,teacher')) {
-                    if (currentSheet) saveSheetData(currentSheet, sheetData);
+                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
+                    continue;
+                } else if (line.includes('schedule') && line.includes('id,day,time,subject,room,teacher')) {
                     currentSheet = 'schedule';
-                    sheetData = [lines[i]];
-                }
-                else if (line.includes('hashtags') && line.includes('id,category,tag')) {
-                    if (currentSheet) saveSheetData(currentSheet, sheetData);
+                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
+                    continue;
+                } else if (line.includes('hashtags') && line.includes('id,category,tag')) {
                     currentSheet = 'hashtags';
-                    sheetData = [lines[i]];
-                }
-                else if (line.includes('gallery') && line.includes('id,title,image_url,date')) {
-                    if (currentSheet) saveSheetData(currentSheet, sheetData);
+                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
+                    continue;
+                } else if (line.includes('gallery') && line.includes('id,title,image_url,date')) {
                     currentSheet = 'gallery';
-                    sheetData = [lines[i]];
+                    headers = line.split(',').map(h => h.replace(/^"|"$/g, '').trim());
+                    continue;
                 }
-                else if (currentSheet && line.length > 0 && !line.includes('https://docs.google')) {
-                    sheetData.push(line);
-                }
-            }
-            
-            if (currentSheet) saveSheetData(currentSheet, sheetData);
-        }
-        
-        function saveSheetData(sheetName, lines) {
-            if (lines.length < 2) return;
-            
-            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
-            const result = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
-                if (!line.trim()) continue;
                 
-                const values = line.split(',').map(v => v.replace(/^"|"$/g, '').trim());
-                const obj = {};
-                
-                headers.forEach((header, index) => {
-                    if (header && values[index]) {
-                        obj[header] = values[index];
+                // Парсим строку данных
+                if (currentSheet && !line.includes('https://docs.google')) {
+                    const values = line.split(',').map(v => v.replace(/^"|"$/g, '').trim());
+                    const obj = {};
+                    
+                    headers.forEach((header, index) => {
+                        if (values[index]) {
+                            obj[header] = values[index];
+                        }
+                    });
+                    
+                    if (Object.keys(obj).length > 0 && obj.id) {
+                        result[currentSheet].push(obj);
                     }
-                });
-                
-                if (Object.keys(obj).length > 0) {
-                    result.push(obj);
                 }
             }
             
-            appData[sheetName] = result;
+            return result;
         }
         
         // ========== ОТОБРАЖЕНИЕ ==========
