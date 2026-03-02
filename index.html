@@ -15,77 +15,231 @@
         body {
             background-color: #0b141a;
             color: #e9edef;
+            overflow-x: hidden;
         }
         
-        /* Шапка как в WhatsApp */
-        .header {
-            background-color: #202c33;
-            padding: 15px 16px;
+        /* Главный контейнер */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Боковое меню (как в Telegram) */
+        .sidebar {
+            width: 280px;
+            background-color: #111b21;
+            border-right: 1px solid #2a3942;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid #2a3942;
+            background-color: #1f2c33;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 20px;
+            color: #00a884;
+        }
+        
+        .sidebar-menu {
+            padding: 8px 0;
+        }
+        
+        .menu-item {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            padding: 12px 16px;
+            gap: 12px;
+            color: #e9edef;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background-color: #1f2c33;
+        }
+        
+        .menu-item.active {
+            background-color: #1f2c33;
+            border-left-color: #00a884;
+        }
+        
+        .menu-item .icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .menu-item .title {
+            flex: 1;
+            font-size: 15px;
+        }
+        
+        .menu-item .badge {
+            background-color: #00a884;
+            color: #111b21;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            transition: margin-left 0.3s ease;
+            height: 100vh;
+            overflow-y: auto;
+            background-color: #0b141a;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
+            width: 100%;
+        }
+        
+        /* Шапка основного контента */
+        .content-header {
+            background-color: #202c33;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
             border-bottom: 1px solid #2a3942;
             position: sticky;
             top: 0;
             z-index: 100;
         }
         
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
+        .menu-toggle {
+            font-size: 24px;
+            cursor: pointer;
+            color: #aebac1;
+            background: none;
+            border: none;
+            padding: 4px 8px;
         }
         
-        .header-left h1 {
+        .content-header h1 {
             font-size: 20px;
             font-weight: 500;
+            flex: 1;
         }
         
-        .header-left span {
+        .content-header span {
             font-size: 14px;
             color: #8696a0;
-            margin-left: 8px;
-            font-weight: normal;
         }
         
-        .header-right {
+        .header-actions {
             display: flex;
-            gap: 20px;
-        }
-        
-        .header-right span {
-            font-size: 20px;
+            gap: 16px;
             color: #aebac1;
-            cursor: default;
         }
         
-        /* Основной контент */
-        .content {
-            max-width: 100%;
-            margin: 0 auto;
-            padding-bottom: 20px;
-        }
-        
-        /* Секции (чаты) */
-        .chat-section {
+        /* Вкладки (как в Telegram) */
+        .tabs-container {
             background-color: #111b21;
-            margin-top: 8px;
+            border-bottom: 1px solid #2a3942;
+            position: sticky;
+            top: 60px;
+            z-index: 90;
         }
         
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding: 0 8px;
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab {
+            padding: 12px 16px;
+            color: #8696a0;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            color: #00a884;
+            border-bottom-color: #00a884;
+        }
+        
+        .tab:hover {
+            color: #e9edef;
+        }
+        
+        /* Контент вкладок */
+        .tab-content {
+            display: none;
+            padding: 8px 0;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Секции как в WhatsApp */
+        .section {
+            background-color: #111b21;
+            margin: 8px 0;
+        }
+        
+        .section-header {
+            padding: 12px 16px;
+            color: #00a884;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #2a3942;
+        }
+        
+        /* Чат-элементы */
         .chat-item {
             display: flex;
             align-items: center;
             padding: 12px 16px;
             background-color: #111b21;
             border-bottom: 1px solid #2a3942;
-            cursor: default;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
         
-        .chat-item:active {
-            background-color: #2a3942;
+        .chat-item:hover {
+            background-color: #1f2c33;
         }
         
-        .avatar {
+        .chat-item .avatar {
             width: 49px;
             height: 49px;
             border-radius: 50%;
@@ -99,38 +253,33 @@
             flex-shrink: 0;
         }
         
-        .chat-info {
+        .chat-item .info {
             flex: 1;
             min-width: 0;
         }
         
-        .chat-title {
+        .chat-item .title-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 4px;
         }
         
-        .chat-title h3 {
+        .chat-item .title {
             font-size: 17px;
-            font-weight: 400;
             color: #e9edef;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
-        .chat-title .time {
+        .chat-item .time {
             font-size: 12px;
             color: #8696a0;
             margin-left: 8px;
-            flex-shrink: 0;
         }
         
-        .chat-message {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .chat-item .message {
             color: #8696a0;
             font-size: 14px;
             white-space: nowrap;
@@ -138,144 +287,97 @@
             text-overflow: ellipsis;
         }
         
-        .chat-message .sender {
+        .chat-item .sender {
             color: #d1d7db;
-            font-weight: 500;
         }
         
-        /* Секция важной информации */
-        .important-section {
-            background-color: #111b21;
-            margin: 8px 0;
-            padding: 12px 16px;
-        }
-        
-        .important-title {
-            color: #00a884;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .important-message {
+        /* Карточки для важной информации */
+        .important-card {
             background-color: #182229;
+            margin: 8px 16px;
             padding: 12px;
             border-radius: 12px;
             border-left: 4px solid #00a884;
-            margin-bottom: 8px;
         }
         
-        .important-message:last-child {
-            margin-bottom: 0;
-        }
-        
-        .important-message .sender {
+        .important-card .sender {
             color: #00a884;
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 4px;
         }
         
-        .important-message .text {
+        .important-card .text {
             color: #e9edef;
             font-size: 15px;
+            margin-bottom: 4px;
         }
         
-        .important-message .time {
+        .important-card .time {
             color: #8696a0;
             font-size: 11px;
-            margin-top: 4px;
             text-align: right;
         }
         
-        /* Секция расписания */
-        .schedule-section {
-            background-color: #111b21;
-            margin: 8px 0;
-            padding: 12px 16px;
+        /* Расписание */
+        .schedule-grid {
+            padding: 8px 16px;
         }
         
-        .schedule-title {
+        .schedule-day {
+            margin-bottom: 16px;
+        }
+        
+        .schedule-day h3 {
             color: #53bdeb;
             font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-bottom: 8px;
         }
         
-        .schedule-item {
+        .schedule-lesson {
             display: flex;
             gap: 12px;
             padding: 8px 0;
             border-bottom: 1px solid #2a3942;
         }
         
-        .schedule-item:last-child {
+        .schedule-lesson:last-child {
             border-bottom: none;
         }
         
-        .schedule-day {
+        .lesson-time {
             min-width: 70px;
             color: #53bdeb;
-            font-weight: 500;
         }
         
-        .schedule-details {
+        .lesson-details {
             flex: 1;
         }
         
-        .schedule-subject {
+        .lesson-name {
             color: #e9edef;
             font-weight: 500;
-            margin-bottom: 2px;
         }
         
-        .schedule-time {
+        .lesson-place {
             color: #8696a0;
             font-size: 13px;
         }
         
-        .schedule-room {
-            color: #8696a0;
-            font-size: 13px;
-            margin-left: 8px;
-        }
-        
-        /* Секция хэштегов */
-        .hashtag-section {
-            background-color: #111b21;
-            margin: 8px 0;
+        /* Хэштеги */
+        .hashtags-container {
             padding: 12px 16px;
         }
         
-        .hashtag-title {
-            color: #ffd279;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
         .hashtag-category {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         
-        .hashtag-category:last-child {
-            margin-bottom: 0;
-        }
-        
-        .category-name {
+        .category-title {
             color: #8696a0;
             font-size: 13px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         
         .hashtag-cloud {
@@ -290,275 +392,509 @@
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 14px;
-            cursor: default;
+            cursor: pointer;
         }
         
-        .hashtag:active {
+        .hashtag:hover {
             background-color: #2a3942;
         }
         
-        /* Секция с картинками расписания */
-        .image-section {
-            background-color: #111b21;
-            margin: 8px 0;
-            padding: 12px 16px;
-        }
-        
-        .image-title {
-            color: #ff9b9b;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
+        /* Галерея */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 8px;
+            padding: 8px 16px;
         }
         
-        .schedule-image {
-            width: 100%;
+        .gallery-item {
+            background-color: #1f2c33;
             border-radius: 12px;
-            margin-bottom: 8px;
+            overflow: hidden;
             cursor: pointer;
-            border: 1px solid #2a3942;
         }
         
-        .image-caption {
-            color: #8696a0;
+        .gallery-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .gallery-item .caption {
+            padding: 8px;
             font-size: 12px;
+            color: #8696a0;
             text-align: center;
         }
         
-        /* Иконки */
-        .icon {
-            font-size: 18px;
+        /* Кнопка скрытия чата */
+        .hide-chat {
+            color: #ff6b6b;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: rgba(255,107,107,0.1);
+            margin-left: 8px;
+            cursor: pointer;
         }
         
-        /* Для имитации чата */
-        .pin-icon {
-            color: #00a884;
-            font-size: 16px;
+        .hide-chat:hover {
+            background-color: rgba(255,107,107,0.2);
+        }
+        
+        /* Скрытые чаты */
+        .chat-item.hidden {
+            display: none;
+        }
+        
+        /* Адаптивность для мобилок */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                z-index: 1000;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Шапка как в твоём скриншоте -->
-    <div class="header">
-        <div class="header-left">
-            <h1>КПСС <span>17 участников</span></h1>
+    <div class="app-container">
+        <!-- Боковое меню -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>КПСС</h2>
+                <span style="color: #8696a0; font-size: 14px;">17 участников</span>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" onclick="switchMainTab('home')">
+                    <span class="icon">🏠</span>
+                    <span class="title">Главная</span>
+                </div>
+                <div class="menu-item" onclick="switchMainTab('chats')">
+                    <span class="icon">💬</span>
+                    <span class="title">Чаты</span>
+                    <span class="badge">5</span>
+                </div>
+                <div class="menu-item" onclick="switchMainTab('schedule')">
+                    <span class="icon">📅</span>
+                    <span class="title">Расписание</span>
+                </div>
+                <div class="menu-item" onclick="switchMainTab('hashtags')">
+                    <span class="icon">✨</span>
+                    <span class="title">Хэштеги</span>
+                </div>
+                <div class="menu-item" onclick="switchMainTab('gallery')">
+                    <span class="icon">🖼️</span>
+                    <span class="title">Галерея</span>
+                </div>
+                <div class="menu-item" onclick="switchMainTab('important')">
+                    <span class="icon">📌</span>
+                    <span class="title">Важное</span>
+                </div>
+            </div>
         </div>
-        <div class="header-right">
-            <span>🔒</span>
-            <span>⋮</span>
+        
+        <!-- Основной контент -->
+        <div class="main-content" id="mainContent">
+            <!-- Шапка -->
+            <div class="content-header">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <h1>КПСС</h1>
+                <span>17 участников</span>
+                <div class="header-actions">
+                    <span>🔒</span>
+                    <span>⋮</span>
+                </div>
+            </div>
+            
+            <!-- Вкладки (как в Telegram) -->
+            <div class="tabs-container">
+                <div class="tabs" id="tabs">
+                    <div class="tab active" onclick="switchTab('all')">Все</div>
+                    <div class="tab" onclick="switchTab('chats')">Чаты</div>
+                    <div class="tab" onclick="switchTab('important')">Важное</div>
+                    <div class="tab" onclick="switchTab('schedule')">Расписание</div>
+                    <div class="tab" onclick="switchTab('media')">Медиа</div>
+                    <div class="tab" onclick="switchTab('hashtags')">Хэштеги</div>
+                </div>
+            </div>
+            
+            <!-- Контент для разных вкладок -->
+            <div id="tabContent">
+                <!-- Вкладка "Все" -->
+                <div class="tab-content active" id="tab-all">
+                    <!-- Важная информация -->
+                    <div class="section">
+                        <div class="section-header">
+                            <span>📌</span> Важная информация
+                        </div>
+                        <div class="important-card">
+                            <div class="sender">Вы</div>
+                            <div class="text">В понедельник после 3 пары собрание в 301 аудитории</div>
+                            <div class="time">14:00</div>
+                        </div>
+                        <div class="important-card">
+                            <div class="sender">Вы</div>
+                            <div class="text">Фотография группового фото - сдать до пятницы</div>
+                            <div class="time">14:44</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Расписание (быстрый просмотр) -->
+                    <div class="section">
+                        <div class="section-header">
+                            <span>📅</span> Расписание на сегодня
+                        </div>
+                        <div class="schedule-grid">
+                            <div class="schedule-lesson">
+                                <div class="lesson-time">9:00</div>
+                                <div class="lesson-details">
+                                    <div class="lesson-name">Математика</div>
+                                    <div class="lesson-place">301 ауд.</div>
+                                </div>
+                            </div>
+                            <div class="schedule-lesson">
+                                <div class="lesson-time">10:45</div>
+                                <div class="lesson-details">
+                                    <div class="lesson-name">Физика</div>
+                                    <div class="lesson-place">205 ауд.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Чаты (как в твоём скриншоте) -->
+                    <div class="section" id="chats-list">
+                        <div class="section-header">
+                            <span>💬</span> Чаты
+                            <span class="hide-chat" onclick="hideAllChats()">Скрыть все</span>
+                        </div>
+                        
+                        <!-- СВОбода слова -->
+                        <div class="chat-item" id="chat-svoboda">
+                            <div class="avatar">📢</div>
+                            <div class="info">
+                                <div class="title-row">
+                                    <span class="title">СВОбода слова</span>
+                                    <span class="time">12:57</span>
+                                </div>
+                                <div class="message">
+                                    <span class="sender">захао:</span> ново-оговорческий процесс...
+                                </div>
+                            </div>
+                            <span class="hide-chat" onclick="hideChat('chat-svoboda', event)">✕</span>
+                        </div>
+                        
+                        <!-- Опросы -->
+                        <div class="chat-item" id="chat-polls">
+                            <div class="avatar">📊</div>
+                            <div class="info">
+                                <div class="title-row">
+                                    <span class="title">Опросы</span>
+                                    <span class="time">16 фев</span>
+                                </div>
+                                <div class="message">
+                                    <span class="sender">Mark:</span> ахуели?
+                                </div>
+                            </div>
+                            <span class="hide-chat" onclick="hideChat('chat-polls', event)">✕</span>
+                        </div>
+                        
+                        <!-- Аттракцион невиданной щедрости -->
+                        <div class="chat-item" id="chat-attraction">
+                            <div class="avatar">🎪</div>
+                            <div class="info">
+                                <div class="title-row">
+                                    <span class="title">Аттракцион невиданной щедрости</span>
+                                    <span class="time">15 фев</span>
+                                </div>
+                                <div class="message">
+                                    <span class="sender">Вы:</span> Тема закрыта
+                                </div>
+                            </div>
+                            <span class="hide-chat" onclick="hideChat('chat-attraction', event)">✕</span>
+                        </div>
+                        
+                        <!-- Для тех кто у Антона проект... -->
+                        <div class="chat-item" id="chat-anton">
+                            <div class="avatar">📝</div>
+                            <div class="info">
+                                <div class="title-row">
+                                    <span class="title">Для тех кто у Антона проект...</span>
+                                    <span class="time">15 фев</span>
+                                </div>
+                                <div class="message">
+                                    <span class="sender">Вы:</span> Тема закрыта
+                                </div>
+                            </div>
+                            <span class="hide-chat" onclick="hideChat('chat-anton', event)">✕</span>
+                        </div>
+                        
+                        <!-- Презентации и тексты -->
+                        <div class="chat-item" id="chat-presentations">
+                            <div class="avatar">📎</div>
+                            <div class="info">
+                                <div class="title-row">
+                                    <span class="title">Презентации и тексты</span>
+                                    <span class="time">15 фев</span>
+                                </div>
+                                <div class="message">
+                                    <span class="sender">Вы:</span> делаем пацаны
+                                </div>
+                            </div>
+                            <span class="hide-chat" onclick="hideChat('chat-presentations', event)">✕</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Вкладка "Чаты" (только чаты) -->
+                <div class="tab-content" id="tab-chats">
+                    <div class="section">
+                        <div class="section-header">
+                            <span>💬</span> Все чаты
+                        </div>
+                        <!-- Здесь будут те же чаты, что и выше -->
+                    </div>
+                </div>
+                
+                <!-- Вкладка "Расписание" (полное расписание) -->
+                <div class="tab-content" id="tab-schedule">
+                    <div class="section">
+                        <div class="section-header">
+                            <span>📅</span> Полное расписание
+                        </div>
+                        <div class="schedule-grid">
+                            <div class="schedule-day">
+                                <h3>Понедельник</h3>
+                                <div class="schedule-lesson">
+                                    <div class="lesson-time">9:00-10:30</div>
+                                    <div class="lesson-details">
+                                        <div class="lesson-name">Математика</div>
+                                        <div class="lesson-place">301 ауд. • Иванов И.И.</div>
+                                    </div>
+                                </div>
+                                <div class="schedule-lesson">
+                                    <div class="lesson-time">10:45-12:15</div>
+                                    <div class="lesson-details">
+                                        <div class="lesson-name">Физика</div>
+                                        <div class="lesson-place">205 ауд. • Петров П.П.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="schedule-day">
+                                <h3>Вторник</h3>
+                                <div class="schedule-lesson">
+                                    <div class="lesson-time">9:00-10:30</div>
+                                    <div class="lesson-details">
+                                        <div class="lesson-name">Информатика</div>
+                                        <div class="lesson-place">410 ауд. • Сидоров С.С.</div>
+                                    </div>
+                                </div>
+                                <div class="schedule-lesson">
+                                    <div class="lesson-time">10:45-12:15</div>
+                                    <div class="lesson-details">
+                                        <div class="lesson-name">Английский</div>
+                                        <div class="lesson-place">207 ауд. • Смирнова А.А.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Картинка расписания -->
+                        <img src="https://via.placeholder.com/600x300/2a3942/00a884?text=Расписание+на+март" 
+                             style="width: 100%; padding: 16px; border-radius: 24px; cursor: pointer;"
+                             onclick="window.open(this.src)">
+                    </div>
+                </div>
+                
+                <!-- Вкладка "Хэштеги" -->
+                <div class="tab-content" id="tab-hashtags">
+                    <div class="section">
+                        <div class="section-header">
+                            <span>✨</span> Все хэштеги
+                        </div>
+                        <div class="hashtags-container">
+                            <div class="hashtag-category">
+                                <div class="category-title">📚 УЧЕБНЫЕ ПРЕДМЕТЫ</div>
+                                <div class="hashtag-cloud">
+                                    <span class="hashtag">#Английский</span>
+                                    <span class="hashtag">#Математика</span>
+                                    <span class="hashtag">#Физика</span>
+                                    <span class="hashtag">#Информатика</span>
+                                    <span class="hashtag">#Литература</span>
+                                    <span class="hashtag">#Русский</span>
+                                    <span class="hashtag">#ОБЗР</span>
+                                </div>
+                            </div>
+                            
+                            <div class="hashtag-category">
+                                <div class="category-title">📝 УЧЕБНЫЕ АКТИВНОСТИ</div>
+                                <div class="hashtag-cloud">
+                                    <span class="hashtag">#Контрольная</span>
+                                    <span class="hashtag">#Зачёт</span>
+                                    <span class="hashtag">#Проект</span>
+                                    <span class="hashtag">#Реферат</span>
+                                    <span class="hashtag">#Дистанционка</span>
+                                </div>
+                            </div>
+                            
+                            <div class="hashtag-category">
+                                <div class="category-title">🎭 КПСС</div>
+                                <div class="hashtag-cloud">
+                                    <span class="hashtag">#КПСС</span>
+                                    <span class="hashtag">#DeluxEdition</span>
+                                    <span class="hashtag">#ВремяСтрадать</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Вкладка "Галерея" -->
+                <div class="tab-content" id="tab-gallery">
+                    <div class="section">
+                        <div class="section-header">
+                            <span>🖼️</span> Галерея расписаний
+                        </div>
+                        <div class="gallery-grid">
+                            <div class="gallery-item">
+                                <img src="https://via.placeholder.com/300x200/2a3942/00a884?text=Март+1-я+неделя">
+                                <div class="caption">1-7 марта</div>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="https://via.placeholder.com/300x200/2a3942/53bdeb?text=Март+2-я+неделя">
+                                <div class="caption">8-14 марта</div>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="https://via.placeholder.com/300x200/2a3942/ff9b9b?text=Экзамены">
+                                <div class="caption">Расписание экзаменов</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Вкладка "Важное" -->
+                <div class="tab-content" id="tab-important">
+                    <div class="section">
+                        <div class="section-header">
+                            <span>📌</span> Вся важная информация
+                        </div>
+                        <div class="important-card">
+                            <div class="sender">Вы</div>
+                            <div class="text">В понедельник после 3 пары собрание в 301 аудитории</div>
+                            <div class="time">14:00</div>
+                        </div>
+                        <div class="important-card">
+                            <div class="sender">Вы</div>
+                            <div class="text">Фотография группового фото - сдать до пятницы</div>
+                            <div class="time">14:44</div>
+                        </div>
+                        <div class="important-card">
+                            <div class="sender">Вы</div>
+                            <div class="text">Второе марта - контрольная по математике</div>
+                            <div class="time">13:55</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="content">
+
+    <script>
+        // Переключение бокового меню
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('closed');
+            mainContent.classList.toggle('expanded');
+        }
         
-        <!-- ВАЖНАЯ ИНФОРМАЦИЯ (как закреплённые сообщения) -->
-        <div class="important-section">
-            <div class="important-title">
-                <span class="pin-icon">📌</span> Важная информация
-            </div>
+        // Переключение основных разделов
+        function switchMainTab(tabName) {
+            // Обновляем активный пункт меню
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
             
-            <div class="important-message">
-                <div class="sender">Вы</div>
-                <div class="text">В понедельник после 3 пары собрание в 301 аудитории</div>
-                <div class="time">14:00</div>
-            </div>
-            
-            <div class="important-message">
-                <div class="sender">Вы</div>
-                <div class="text">Фотография группового фото - сдать до пятницы</div>
-                <div class="time">14:44</div>
-            </div>
-        </div>
+            // Здесь можно добавить логику для разных основных разделов
+            if (tabName === 'home') {
+                switchTab('all');
+            }
+        }
         
-        <!-- РАСПИСАНИЕ (текстовое) -->
-        <div class="schedule-section">
-            <div class="schedule-title">
-                <span>📅</span> Расписание (будет обновляться)
-            </div>
+        // Переключение вкладок
+        function switchTab(tabName) {
+            // Обновляем активную вкладку
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
             
-            <div class="schedule-item">
-                <div class="schedule-day">ПН</div>
-                <div class="schedule-details">
-                    <div class="schedule-subject">Математика <span class="schedule-room">301</span></div>
-                    <div class="schedule-time">9:00 - 10:30</div>
-                </div>
-            </div>
-            
-            <div class="schedule-item">
-                <div class="schedule-day">ПН</div>
-                <div class="schedule-details">
-                    <div class="schedule-subject">Физика <span class="schedule-room">205</span></div>
-                    <div class="schedule-time">10:45 - 12:15</div>
-                </div>
-            </div>
-            
-            <div class="schedule-item">
-                <div class="schedule-day">ВТ</div>
-                <div class="schedule-details">
-                    <div class="schedule-subject">Информатика <span class="schedule-room">410</span></div>
-                    <div class="schedule-time">9:00 - 10:30</div>
-                </div>
-            </div>
-            
-            <div class="schedule-item">
-                <div class="schedule-day">ВТ</div>
-                <div class="schedule-details">
-                    <div class="schedule-subject">Английский <span class="schedule-room">207</span></div>
-                    <div class="schedule-time">10:45 - 12:15</div>
-                </div>
-            </div>
-        </div>
+            // Показываем соответствующий контент
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
         
-        <!-- КАРТИНКА С РАСПИСАНИЕМ -->
-        <div class="image-section">
-            <div class="image-title">
-                <span>🖼️</span> Расписание (картинка)
-            </div>
+        // Скрыть конкретный чат
+        function hideChat(chatId, event) {
+            event.stopPropagation();
+            const chat = document.getElementById(chatId);
+            chat.classList.add('hidden');
             
-            <!-- ЗАМЕНИ ЭТУ ССЫЛКУ НА СВОЮ КАРТИНКУ -->
-            <img src="https://via.placeholder.com/600x400/2a3942/00a884?text=Расписание+на+март" 
-                 class="schedule-image" 
-                 onclick="window.open(this.src, '_blank')">
-            <div class="image-caption">Нажми на картинку, чтобы увеличить • Обновлено 2 марта</div>
-        </div>
+            // Сохраняем в localStorage, чтобы чат оставался скрытым
+            let hiddenChats = JSON.parse(localStorage.getItem('hiddenChats') || '[]');
+            if (!hiddenChats.includes(chatId)) {
+                hiddenChats.push(chatId);
+                localStorage.setItem('hiddenChats', JSON.stringify(hiddenChats));
+            }
+        }
         
-        <!-- ТЕМЫ/ЧАТЫ (как на скриншоте) -->
-        <div class="chat-section">
-            <!-- СВОбода слова -->
-            <div class="chat-item">
-                <div class="avatar">📢</div>
-                <div class="chat-info">
-                    <div class="chat-title">
-                        <h3>СВОбода слова</h3>
-                        <span class="time">12:57</span>
-                    </div>
-                    <div class="chat-message">
-                        <span class="sender">захао:</span> ново-оговорческий процесс...
-                    </div>
-                </div>
-            </div>
+        // Скрыть все чаты
+        function hideAllChats() {
+            document.querySelectorAll('.chat-item').forEach(chat => {
+                chat.classList.add('hidden');
+            });
             
-            <!-- Опросы -->
-            <div class="chat-item">
-                <div class="avatar">📊</div>
-                <div class="chat-info">
-                    <div class="chat-title">
-                        <h3>Опросы</h3>
-                        <span class="time">16 фев</span>
-                    </div>
-                    <div class="chat-message">
-                        <span class="sender">Mark:</span> ахуели?
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Аттракцион невиданной... -->
-            <div class="chat-item">
-                <div class="avatar">🎪</div>
-                <div class="chat-info">
-                    <div class="chat-title">
-                        <h3>Аттракцион невиданной щедрости</h3>
-                        <span class="time">15 фев</span>
-                    </div>
-                    <div class="chat-message">
-                        <span class="sender">Вы:</span> Тема закрыта
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Для тех кто у Антона проект... -->
-            <div class="chat-item">
-                <div class="avatar">📝</div>
-                <div class="chat-info">
-                    <div class="chat-title">
-                        <h3>Для тех кто у Антона проект...</h3>
-                        <span class="time">15 фев</span>
-                    </div>
-                    <div class="chat-message">
-                        <span class="sender">Вы:</span> Тема закрыта
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Презентации и тексты -->
-            <div class="chat-item">
-                <div class="avatar">📎</div>
-                <div class="chat-info">
-                    <div class="chat-title">
-                        <h3>Презентации и тексты</h3>
-                        <span class="time">15 фев</span>
-                    </div>
-                    <div class="chat-message">
-                        <span class="sender">Вы:</span> делаем пацаны
-                    </div>
-                </div>
-            </div>
-        </div>
+            // Сохраняем все ID чатов
+            const allChatIds = Array.from(document.querySelectorAll('.chat-item')).map(chat => chat.id);
+            localStorage.setItem('hiddenChats', JSON.stringify(allChatIds));
+        }
         
-        <!-- ВСЕ ХЭШТЕГИ -->
-        <div class="hashtag-section">
-            <div class="hashtag-title">
-                <span>✨</span> Все хэштеги
-            </div>
-            
-            <!-- Учебные предметы -->
-            <div class="hashtag-category">
-                <div class="category-name">📚 УЧЕБНЫЕ ПРЕДМЕТЫ</div>
-                <div class="hashtag-cloud">
-                    <span class="hashtag">#Английский</span>
-                    <span class="hashtag">#АрхитектураАппаратныхСредств</span>
-                    <span class="hashtag">#ДискретнаяМатематика</span>
-                    <span class="hashtag">#Информатика</span>
-                    <span class="hashtag">#ИнформационныеТехнологии</span>
-                    <span class="hashtag">#Литература</span>
-                    <span class="hashtag">#Математика</span>
-                    <span class="hashtag">#ОБЗР</span>
-                    <span class="hashtag">#ОперационныеСистемы</span>
-                    <span class="hashtag">#ОсновыПроектированияБазДанных</span>
-                    <span class="hashtag">#ПроектированиеБазДанных</span>
-                    <span class="hashtag">#Русский</span>
-                    <span class="hashtag">#ТеорияВероятности</span>
-                    <span class="hashtag">#Физика</span>
-                    <span class="hashtag">#Физкультура</span>
-                    <span class="hashtag">#Win10</span>
-                    <span class="hashtag">#ЭлементыВышмата</span>
-                </div>
-            </div>
-            
-            <!-- Учебные активности -->
-            <div class="hashtag-category">
-                <div class="category-name">📝 УЧЕБНЫЕ АКТИВНОСТИ</div>
-                <div class="hashtag-cloud">
-                    <span class="hashtag">#автомат</span>
-                    <span class="hashtag">#Дистанционка</span>
-                    <span class="hashtag">#Зачёт</span>
-                    <span class="hashtag">#конспекты</span>
-                    <span class="hashtag">#Консультация</span>
-                    <span class="hashtag">#Контрольная</span>
-                    <span class="hashtag">#Пересдача</span>
-                    <span class="hashtag">#Проект</span>
-                    <span class="hashtag">#Реферат</span>
-                </div>
-            </div>
-            
-            <!-- КПСС -->
-            <div class="hashtag-category">
-                <div class="category-name">🎭 КПСС</div>
-                <div class="hashtag-cloud">
-                    <span class="hashtag">#DeluxEdition</span>
-                    <span class="hashtag">#ВремяСтрадать</span>
-                    <span class="hashtag">#КПСС</span>
-                    <span class="hashtag">#Эксклюзив</span>
-                </div>
-            </div>
-        </div>
+        // Показать все чаты
+        function showAllChats() {
+            document.querySelectorAll('.chat-item').forEach(chat => {
+                chat.classList.remove('hidden');
+            });
+            localStorage.removeItem('hiddenChats');
+        }
         
-        <!-- Нижний отступ -->
-        <div style="height: 20px;"></div>
+        // При загрузке страницы восстанавливаем скрытые чаты
+        window.onload = function() {
+            const hiddenChats = JSON.parse(localStorage.getItem('hiddenChats') || '[]');
+            hiddenChats.forEach(chatId => {
+                const chat = document.getElementById(chatId);
+                if (chat) chat.classList.add('hidden');
+            });
+        }
         
-    </div>
+        // Закрыть меню на мобильных при клике вне его
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = event.target.closest('.menu-toggle');
+            
+            if (window.innerWidth <= 768 && !sidebar.contains(event.target) && !menuToggle) {
+                sidebar.classList.add('closed');
+                document.getElementById('mainContent').classList.add('expanded');
+            }
+        });
+    </script>
 </body>
 </html>
