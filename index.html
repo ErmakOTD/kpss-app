@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>КПСС - Коммунистическая партия студентов</title>
+    <title>КПСС — группа</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
         
         body {
-            background-color: #8B0000; /* Тёмно-красный фон */
-            color: #FFD700; /* Золотой текст */
+            background-color: #f5f7fa;
+            color: #2c3e50;
             overflow-x: hidden;
         }
         
@@ -25,25 +25,19 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-size: 20px;
-            color: #FFD700;
-            background-color: #8B0000;
+            font-size: 16px;
+            color: #3498db;
+            background-color: #f5f7fa;
         }
         
         .spinner {
-            width: 50px;
-            height: 50px;
-            margin-top: 20px;
-            border: 4px solid #FFD700;
-            border-top-color: transparent;
+            width: 40px;
+            height: 40px;
+            margin-top: 16px;
+            border: 3px solid #e0e7ff;
+            border-top-color: #3498db;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-        }
-        
-        .hammer-sickle {
-            font-size: 48px;
-            margin-bottom: 20px;
-            color: #FFD700;
         }
         
         @keyframes spin {
@@ -58,18 +52,19 @@
             position: relative;
         }
         
-        /* Боковое меню */
+        /* Боковое меню — светлое и воздушное */
         .sidebar {
             width: 280px;
-            background-color: #8B0000;
-            border-right: 2px solid #FFD700;
+            background-color: white;
+            border-right: 1px solid #e9ecef;
             height: 100vh;
             overflow-y: auto;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
             position: fixed;
             left: 0;
             top: 0;
             z-index: 1000;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.02);
         }
         
         .sidebar.closed {
@@ -77,69 +72,66 @@
         }
         
         .sidebar-header {
-            padding: 20px 16px;
-            border-bottom: 2px solid #FFD700;
-            background-color: #A52A2A;
-            text-align: center;
+            padding: 24px 20px;
+            border-bottom: 1px solid #f1f3f5;
+            background-color: white;
         }
         
         .sidebar-header h2 {
-            font-size: 24px;
-            color: #FFD700;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #2c3e50;
+            letter-spacing: -0.3px;
         }
         
         .sidebar-header span {
-            color: #FFD700;
-            font-size: 14px;
-            opacity: 0.9;
+            color: #7f8c8d;
+            font-size: 13px;
+            margin-top: 4px;
+            display: block;
         }
         
         .sidebar-menu {
-            padding: 8px 0;
+            padding: 12px 0;
         }
         
         .menu-item {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            gap: 12px;
-            color: #FFD700;
+            padding: 12px 20px;
+            gap: 14px;
+            color: #5a6a7a;
             cursor: pointer;
-            transition: background-color 0.2s;
-            border-left: 4px solid transparent;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            margin: 2px 0;
         }
         
         .menu-item:hover {
-            background-color: #A52A2A;
+            background-color: #f8fafd;
+            color: #3498db;
         }
         
         .menu-item.active {
-            background-color: #A52A2A;
-            border-left-color: #FFD700;
-            font-weight: bold;
+            background-color: #f0f7ff;
+            border-left-color: #3498db;
+            color: #3498db;
+            font-weight: 500;
         }
         
         .menu-item .icon {
-            font-size: 20px;
+            font-size: 18px;
             width: 24px;
             text-align: center;
         }
         
-        .menu-item .title {
-            flex: 1;
-            font-size: 15px;
-        }
-        
         .menu-item .badge {
-            background-color: #FFD700;
-            color: #8B0000;
+            background-color: #3498db;
+            color: white;
             padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 500;
         }
         
         /* Основной контент */
@@ -147,10 +139,10 @@
             flex: 1;
             margin-left: 280px;
             width: calc(100% - 280px);
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.2s ease;
             height: 100vh;
             overflow-y: auto;
-            background-color: #8B0000;
+            background-color: #f5f7fa;
         }
         
         .main-content.expanded {
@@ -160,55 +152,66 @@
         
         /* Шапка */
         .content-header {
-            background-color: #A52A2A;
-            padding: 12px 16px;
+            background-color: white;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             gap: 16px;
-            border-bottom: 2px solid #FFD700;
+            border-bottom: 1px solid #e9ecef;
             position: sticky;
             top: 0;
             z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255,255,255,0.9);
         }
         
         .menu-toggle {
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
-            color: #FFD700;
+            color: #5a6a7a;
             background: none;
             border: none;
             padding: 4px 8px;
+            border-radius: 8px;
+        }
+        
+        .menu-toggle:hover {
+            background-color: #f1f3f5;
         }
         
         .content-header h1 {
-            font-size: 22px;
-            font-weight: bold;
+            font-size: 18px;
+            font-weight: 600;
             flex: 1;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #2c3e50;
         }
         
         .content-header span {
-            font-size: 14px;
-            color: #FFD700;
-            opacity: 0.9;
+            font-size: 13px;
+            color: #7f8c8d;
         }
         
         .header-actions {
             display: flex;
-            gap: 16px;
-            color: #FFD700;
+            gap: 12px;
+            color: #5a6a7a;
         }
         
         .header-actions span {
             cursor: pointer;
-            font-size: 20px;
+            font-size: 18px;
+            padding: 6px;
+            border-radius: 8px;
+        }
+        
+        .header-actions span:hover {
+            background-color: #f1f3f5;
         }
         
         /* Вкладки */
         .tabs-container {
-            background-color: #8B0000;
-            border-bottom: 2px solid #FFD700;
+            background-color: white;
+            border-bottom: 1px solid #e9ecef;
             position: sticky;
             top: 60px;
             z-index: 90;
@@ -218,7 +221,8 @@
             display: flex;
             overflow-x: auto;
             scrollbar-width: none;
-            padding: 0 8px;
+            padding: 0 12px;
+            gap: 4px;
         }
         
         .tabs::-webkit-scrollbar {
@@ -227,8 +231,7 @@
         
         .tab {
             padding: 12px 16px;
-            color: #FFD700;
-            opacity: 0.8;
+            color: #7f8c8d;
             font-weight: 500;
             font-size: 14px;
             cursor: pointer;
@@ -237,84 +240,97 @@
             transition: all 0.2s;
         }
         
+        .tab:hover {
+            color: #3498db;
+        }
+        
         .tab.active {
-            color: #FFD700;
-            opacity: 1;
-            border-bottom-color: #FFD700;
-            font-weight: bold;
+            color: #3498db;
+            border-bottom-color: #3498db;
         }
         
         /* Контент вкладок */
         .tab-content {
             display: none;
-            padding: 8px 0;
+            padding: 12px;
         }
         
         .tab-content.active {
             display: block;
         }
         
-        /* Секции */
+        /* Карточки */
         .section {
-            background-color: #A52A2A;
-            margin: 8px 0;
-            border-top: 1px solid #FFD700;
-            border-bottom: 1px solid #FFD700;
+            background-color: white;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            border: 1px solid #f0f2f5;
         }
         
         .section-header {
-            padding: 12px 16px;
-            color: #FFD700;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 16px 20px;
+            color: #2c3e50;
+            font-size: 15px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid #FFD700;
+            gap: 10px;
+            border-bottom: 1px solid #f1f3f5;
             cursor: pointer;
-            background-color: #8B0000;
+        }
+        
+        .section-header span:first-child {
+            font-size: 18px;
         }
         
         .section-header span:last-child {
             margin-left: auto;
+            color: #b0bec5;
+            font-size: 14px;
         }
         
         .section-content {
-            transition: all 0.3s;
+            padding: 4px 0;
         }
         
         .section-content.collapsed {
             display: none;
         }
         
-        /* Чат-элементы */
+        /* Элементы чата */
         .chat-item {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            background-color: #A52A2A;
-            border-bottom: 1px solid #FFD700;
+            padding: 12px 20px;
+            background-color: white;
+            border-bottom: 1px solid #f5f7fa;
             cursor: pointer;
             transition: background-color 0.2s;
         }
         
+        .chat-item:last-child {
+            border-bottom: none;
+        }
+        
         .chat-item:hover {
-            background-color: #8B0000;
+            background-color: #f8fafd;
         }
         
         .chat-item .avatar {
-            width: 49px;
-            height: 49px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background-color: #8B0000;
-            border: 2px solid #FFD700;
-            margin-right: 12px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f7ff 100%);
+            margin-right: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #FFD700;
+            color: #3498db;
             font-size: 20px;
             flex-shrink: 0;
+            border: 1px solid #e9ecef;
         }
         
         .chat-item .info {
@@ -326,47 +342,52 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         
         .chat-item .title {
-            font-size: 17px;
-            color: #FFD700;
-            font-weight: bold;
+            font-size: 16px;
+            font-weight: 500;
+            color: #2c3e50;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
         .chat-item .time {
-            font-size: 12px;
-            color: #FFD700;
-            opacity: 0.7;
+            font-size: 11px;
+            color: #95a5a6;
+            margin-left: 8px;
+            flex-shrink: 0;
         }
         
         .chat-item .message {
-            color: #FFD700;
-            opacity: 0.9;
-            font-size: 14px;
+            color: #7f8c8d;
+            font-size: 13px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
         .chat-item .sender {
-            color: #FFD700;
-            font-weight: bold;
+            color: #34495e;
+            font-weight: 500;
         }
         
         .chat-item .hide-btn {
-            color: #FFD700;
+            color: #e74c3c;
             font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background-color: rgba(255, 215, 0, 0.1);
-            border: 1px solid #FFD700;
-            margin-left: 8px;
+            padding: 6px 10px;
+            border-radius: 30px;
+            background-color: #fef5f5;
+            margin-left: 12px;
             cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .chat-item .hide-btn:hover {
+            opacity: 1;
         }
         
         .chat-item.hidden {
@@ -375,57 +396,70 @@
         
         /* Важная информация */
         .important-card {
-            background-color: #8B0000;
-            margin: 8px 16px;
-            padding: 12px;
-            border-radius: 12px;
-            border-left: 4px solid #FFD700;
-            border-right: 1px solid #FFD700;
+            background: linear-gradient(135deg, #f8fafd 0%, #f0f7ff 100%);
+            margin: 12px 16px;
+            padding: 16px;
+            border-radius: 14px;
+            border-left: 4px solid #3498db;
             cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .important-card:hover {
+            transform: translateX(4px);
         }
         
         .important-card .sender {
-            color: #FFD700;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 4px;
+            color: #3498db;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
         
         .important-card .text {
-            color: #FFD700;
+            color: #2c3e50;
             font-size: 15px;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            line-height: 1.4;
         }
         
         .important-card .time {
-            color: #FFD700;
-            opacity: 0.7;
+            color: #95a5a6;
             font-size: 11px;
             text-align: right;
         }
         
         /* Расписание */
         .schedule-grid {
-            padding: 8px 16px;
+            padding: 12px 16px;
         }
         
         .schedule-day {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         
         .schedule-day h3 {
-            color: #FFD700;
-            font-size: 16px;
-            margin-bottom: 8px;
-            text-decoration: underline;
+            color: #3498db;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
         
         .schedule-lesson {
             display: flex;
-            gap: 12px;
-            padding: 8px 0;
-            border-bottom: 1px solid #FFD700;
+            gap: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f5;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .schedule-lesson:hover {
+            background-color: #f8fafd;
         }
         
         .schedule-lesson:last-child {
@@ -433,9 +467,10 @@
         }
         
         .lesson-time {
-            min-width: 70px;
-            color: #FFD700;
-            font-weight: bold;
+            min-width: 75px;
+            color: #7f8c8d;
+            font-size: 13px;
+            font-weight: 500;
         }
         
         .lesson-details {
@@ -443,19 +478,19 @@
         }
         
         .lesson-name {
-            color: #FFD700;
-            font-weight: bold;
+            color: #2c3e50;
+            font-weight: 500;
+            margin-bottom: 4px;
         }
         
         .lesson-place {
-            color: #FFD700;
-            opacity: 0.8;
-            font-size: 13px;
+            color: #95a5a6;
+            font-size: 12px;
         }
         
         /* Хэштеги */
         .hashtags-container {
-            padding: 12px 16px;
+            padding: 16px;
         }
         
         .hashtag-category {
@@ -463,11 +498,12 @@
         }
         
         .category-title {
-            color: #FFD700;
-            font-size: 14px;
+            color: #7f8c8d;
+            font-size: 12px;
             text-transform: uppercase;
-            margin-bottom: 10px;
-            font-weight: bold;
+            letter-spacing: 0.3px;
+            margin-bottom: 12px;
+            font-weight: 600;
         }
         
         .hashtag-cloud {
@@ -477,77 +513,89 @@
         }
         
         .hashtag {
-            background-color: #8B0000;
-            color: #FFD700;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
+            background-color: #f0f7ff;
+            color: #3498db;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-size: 13px;
             cursor: pointer;
-            border: 1px solid #FFD700;
+            transition: all 0.2s;
+            border: 1px solid #e0e7ff;
         }
         
         .hashtag:hover {
-            background-color: #A52A2A;
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
         }
         
         /* Галерея */
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 8px;
-            padding: 8px 16px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            padding: 16px;
         }
         
         .gallery-item {
-            background-color: #8B0000;
-            border-radius: 12px;
+            background-color: white;
+            border-radius: 14px;
             overflow: hidden;
             cursor: pointer;
-            border: 1px solid #FFD700;
+            border: 1px solid #f0f2f5;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
         }
         
         .gallery-item img {
             width: 100%;
             height: 120px;
             object-fit: cover;
+            border-bottom: 1px solid #f1f3f5;
         }
         
         .gallery-item .caption {
-            padding: 8px;
+            padding: 12px;
             font-size: 12px;
-            color: #FFD700;
+            color: #2c3e50;
             text-align: center;
-            border-top: 1px solid #FFD700;
+            font-weight: 500;
         }
         
         /* Поиск */
         .search-box {
-            padding: 8px 16px;
-            background-color: #A52A2A;
+            padding: 12px 16px;
+            background-color: white;
+            border-bottom: 1px solid #e9ecef;
         }
         
         .search-box input {
             width: 100%;
-            padding: 12px;
-            background-color: #8B0000;
-            border: 1px solid #FFD700;
-            border-radius: 8px;
-            color: #FFD700;
+            padding: 14px 18px;
+            background-color: #f5f7fa;
+            border: 1px solid #e9ecef;
+            border-radius: 30px;
+            color: #2c3e50;
             font-size: 14px;
-        }
-        
-        .search-box input::placeholder {
-            color: #FFD700;
-            opacity: 0.7;
+            transition: all 0.2s;
         }
         
         .search-box input:focus {
             outline: none;
-            border-color: #FFD700;
-            border-width: 2px;
+            border-color: #3498db;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
         }
         
-        /* Модальное окно */
+        .search-box input::placeholder {
+            color: #b0bec5;
+        }
+        
+        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -555,10 +603,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0,0,0,0.8);
+            background-color: rgba(0,0,0,0.4);
             z-index: 2000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(4px);
         }
         
         .modal.active {
@@ -566,66 +615,73 @@
         }
         
         .modal-content {
-            background-color: #8B0000;
-            border-radius: 16px;
-            padding: 20px;
+            background-color: white;
+            border-radius: 24px;
+            padding: 24px;
             max-width: 90%;
             max-height: 80vh;
             overflow-y: auto;
-            width: 400px;
-            border: 2px solid #FFD700;
+            width: 380px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
         
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            color: #FFD700;
-            font-size: 20px;
-            border-bottom: 1px solid #FFD700;
-            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f3f5;
         }
         
         .modal-close {
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
-            color: #FFD700;
+            color: #95a5a6;
+            transition: color 0.2s;
+        }
+        
+        .modal-close:hover {
+            color: #e74c3c;
         }
         
         .modal-body {
-            color: #FFD700;
+            color: #5a6a7a;
+            line-height: 1.6;
         }
         
         /* Индикатор обновления */
         .update-indicator {
-            background-color: #FFD700;
-            color: #8B0000;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-size: 14px;
+            background-color: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 24px;
+            right: 24px;
             display: none;
             z-index: 2000;
-            font-weight: bold;
-            border: 1px solid #8B0000;
+            box-shadow: 0 4px 12px rgba(46,204,113,0.3);
         }
         
         .update-indicator.show {
             display: block;
+            animation: slideIn 0.3s;
         }
         
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
             }
-            
-            .main-content {
-                margin-left: 0;
-                width: 100%;
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
         
@@ -633,8 +689,8 @@
         .error {
             text-align: center;
             padding: 40px 20px;
-            color: #FFD700;
-            background-color: #8B0000;
+            color: #e74c3c;
+            background-color: white;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -642,37 +698,59 @@
             align-items: center;
         }
         
-        .error h2 {
-            font-size: 24px;
-            margin-bottom: 20px;
+        .error h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #2c3e50;
         }
         
         .retry-btn {
-            background-color: #FFD700;
-            color: #8B0000;
+            background-color: #3498db;
+            color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 14px 28px;
+            border-radius: 40px;
             margin-top: 20px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(52,152,219,0.3);
+            transition: all 0.2s;
+        }
+        
+        .retry-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.05);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .content-header h1 {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="loading" id="loading">
-        <div class="hammer-sickle">⚒️🌾</div>
-        <div>КПСС загружает данные...</div>
+        <div>КПСС · загрузка</div>
         <div class="spinner"></div>
-        <div style="margin-top: 20px; font-size: 14px;">Пролетарии всех стран, соединяйтесь!</div>
     </div>
     
     <div class="error" id="error" style="display: none;">
-        <h2>⚠️ ОШИБКА ЗАГРУЗКИ</h2>
-        <div style="margin: 20px 0;" id="errorMessage"></div>
-        <div style="font-size: 14px; margin-bottom: 20px;">Проверь подключение к интернету</div>
-        <button class="retry-btn" onclick="location.reload()">ПОВТОРИТЬ</button>
+        <h3>⚠️ Не удалось загрузить данные</h3>
+        <div style="color: #7f8c8d; font-size: 14px; margin: 12px 0;" id="errorMessage"></div>
+        <button class="retry-btn" onclick="location.reload()">Попробовать снова</button>
     </div>
     
     <div class="app-container" id="app" style="display: none;">
@@ -741,57 +819,51 @@
                 <input type="text" placeholder="Поиск по чатам..." id="searchInput" onkeyup="searchChats()">
             </div>
             
-            <!-- Контент -->
+            <!-- Контент (заполняется динамически) -->
             <div id="tabContent">
-                <!-- Вкладка Все (заполняется динамически) -->
                 <div class="tab-content active" id="tab-all"></div>
-                
-                <!-- Вкладка Чаты -->
                 <div class="tab-content" id="tab-chats"></div>
-                
-                <!-- Вкладка Важное -->
                 <div class="tab-content" id="tab-important"></div>
-                
-                <!-- Вкладка Расписание -->
                 <div class="tab-content" id="tab-schedule"></div>
-                
-                <!-- Вкладка Галерея -->
                 <div class="tab-content" id="tab-gallery"></div>
-                
-                <!-- Вкладка Хэштеги -->
                 <div class="tab-content" id="tab-hashtags"></div>
             </div>
         </div>
     </div>
     
-    <!-- Модальное окно для чата -->
+    <!-- Модальные окна -->
     <div class="modal" id="chatModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalChatTitle">Чат</h2>
+                <span id="modalChatTitle">Чат</span>
                 <span class="modal-close" onclick="closeModal('chatModal')">✕</span>
             </div>
             <div class="modal-body" id="modalChatContent"></div>
         </div>
     </div>
     
-    <!-- Модальное окно для информации -->
     <div class="modal" id="infoModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="infoModalTitle">Информация</h2>
+                <span id="infoModalTitle">Информация</span>
                 <span class="modal-close" onclick="closeModal('infoModal')">✕</span>
             </div>
             <div class="modal-body" id="infoModalContent"></div>
         </div>
     </div>
     
-    <!-- Индикатор обновления -->
-    <div class="update-indicator" id="updateIndicator">⚒️🌾 Данные обновлены</div>
+    <div class="update-indicator" id="updateIndicator">Данные обновлены</div>
 
     <script>
         // ========== ID ТАБЛИЦЫ ==========
         const SPREADSHEET_ID = '2PACX-1vSsSqamntRqegFjdSxWXgutpyHpZx69KijaC7QgKGCHV7zPtkE3lUZ3mSV17lCZsYMep1so1gjCOk7G';
+        
+        // Прокси-серверы для обхода CORS (по очереди)
+        const PROXIES = [
+            'https://api.allorigins.win/raw?url=',
+            'https://cors-anywhere.herokuapp.com/',
+            'https://proxy.cors.sh/'
+        ];
         
         // Данные приложения
         let appData = {
@@ -802,19 +874,23 @@
             gallery: []
         };
         
-        // Скрытые чаты
         let hiddenChats = [];
+        let loadAttempts = 0;
         
         // ========== ЗАГРУЗКА ДАННЫХ ==========
         async function loadAllData() {
             showLoading(true);
+            loadAttempts++;
             
             try {
-                // Загружаем данные через JSONP (работает на Android)
-                await loadSheetData();
+                // Пробуем загрузить через разные прокси
+                await loadWithProxy();
+                
+                if (appData.chats.length === 0 && appData.important.length === 0) {
+                    throw new Error('Нет данных');
+                }
                 
                 console.log('✅ Данные загружены:', appData);
-                
                 renderAll();
                 updateCounters();
                 showLoading(false);
@@ -822,79 +898,103 @@
                 
             } catch (error) {
                 console.error('❌ Ошибка загрузки:', error);
-                showLoading(false);
-                showError(error.message);
-            }
-        }
-        
-        // Загрузка через fetch с правильными заголовками
-        async function loadSheetData() {
-            // Пробуем загрузить каждый лист
-            const sheets = ['important', 'chats', 'schedule', 'hashtags', 'gallery'];
-            
-            for (const sheet of sheets) {
-                try {
-                    const data = await fetchSheet(sheet);
-                    if (data) {
-                        appData[sheet] = parseCSV(data);
-                    }
-                } catch (e) {
-                    console.warn(`Не удалось загрузить ${sheet}:`, e);
+                
+                if (loadAttempts < 3) {
+                    // Пробуем ещё раз через секунду
+                    setTimeout(loadAllData, 1000);
+                } else {
+                    showLoading(false);
+                    showError('Не удалось загрузить данные. Проверьте интернет.');
                 }
             }
         }
         
-        async function fetchSheet(sheetName) {
-            const url = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv&sheet=${sheetName}`;
+        async function loadWithProxy() {
+            const sheets = ['important', 'chats', 'schedule', 'hashtags', 'gallery'];
             
+            for (const sheet of sheets) {
+                let success = false;
+                
+                for (const proxy of PROXIES) {
+                    try {
+                        const url = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv&sheet=${sheet}`;
+                        const proxyUrl = proxy + encodeURIComponent(url);
+                        
+                        const response = await fetchWithTimeout(proxyUrl);
+                        if (response && response.length > 100) { // Проверяем, что ответ не пустой
+                            appData[sheet] = parseCSV(response);
+                            success = true;
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`Прокси ${proxy} не сработал для ${sheet}`);
+                    }
+                }
+                
+                // Если не получилось через прокси, пробуем прямой запрос
+                if (!success) {
+                    try {
+                        const directUrl = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv&sheet=${sheet}`;
+                        const response = await fetchWithTimeout(directUrl);
+                        if (response) {
+                            appData[sheet] = parseCSV(response);
+                        }
+                    } catch (e) {
+                        console.log(`Прямой запрос не сработал для ${sheet}`);
+                    }
+                }
+            }
+        }
+        
+        async function fetchWithTimeout(url, timeout = 8000) {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
+            const id = setTimeout(() => controller.abort(), timeout);
             
             try {
                 const response = await fetch(url, {
                     signal: controller.signal,
+                    mode: 'cors',
+                    cache: 'no-cache',
                     headers: {
                         'Accept': 'text/csv, text/plain, */*'
-                    },
-                    mode: 'cors',
-                    cache: 'no-cache'
+                    }
                 });
                 
-                clearTimeout(timeoutId);
+                clearTimeout(id);
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
+                if (!response.ok) return null;
                 return await response.text();
             } catch (error) {
-                clearTimeout(timeoutId);
-                throw error;
+                clearTimeout(id);
+                return null;
             }
         }
         
         function parseCSV(csv) {
-            if (!csv || csv.trim() === '') return [];
+            if (!csv || csv.length < 10) return [];
             
             const lines = csv.split('\n');
             if (lines.length < 2) return [];
             
-            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
             const result = [];
             
-            for (let i = 1; i < lines.length; i++) {
+            for (let i = 1; i < Math.min(lines.length, 20); i++) { // Ограничиваем до 20 записей
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                // Простой парсинг CSV
-                const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-                
+                const values = line.split(',').map(v => v.replace(/^"|"$/g, '').trim());
                 const obj = {};
+                
                 headers.forEach((header, index) => {
-                    obj[header] = values[index] || '';
+                    if (header && values[index]) {
+                        obj[header] = values[index];
+                    }
                 });
                 
-                result.push(obj);
+                if (Object.keys(obj).length > 0) {
+                    result.push(obj);
+                }
             }
             
             return result;
@@ -917,22 +1017,22 @@
             let html = '';
             
             // Важная информация
-            if (appData.important && appData.important.length > 0) {
+            if (appData.important?.length > 0) {
                 html += `
                     <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
-                            <span>📌</span> ВАЖНАЯ ИНФОРМАЦИЯ
+                            <span>📌</span> Важное
                             <span>▼</span>
                         </div>
                         <div class="section-content">
                 `;
                 
-                appData.important.forEach(item => {
+                appData.important.slice(0, 3).forEach(item => {
                     html += `
                         <div class="important-card" onclick="showImportantDetails('${item.id}')">
                             <div class="sender">${item.sender || 'КПСС'}</div>
                             <div class="text">${item.text || ''}</div>
-                            <div class="time">${item.time || ''} • ${item.date || ''}</div>
+                            <div class="time">${item.time || ''}</div>
                         </div>
                     `;
                 });
@@ -941,21 +1041,21 @@
             }
             
             // Расписание
-            if (appData.schedule && appData.schedule.length > 0) {
+            if (appData.schedule?.length > 0) {
                 html += `
                     <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
-                            <span>📅</span> РАСПИСАНИЕ
+                            <span>📅</span> Расписание
                             <span>▼</span>
                         </div>
                         <div class="section-content">
                             <div class="schedule-grid">
                 `;
                 
-                appData.schedule.slice(0, 4).forEach(lesson => {
+                appData.schedule.slice(0, 3).forEach(lesson => {
                     html += `
                         <div class="schedule-lesson" onclick="showLessonDetails('${lesson.id}')">
-                            <div class="lesson-time">${lesson.time ? lesson.time.split('-')[0] : ''}</div>
+                            <div class="lesson-time">${lesson.time?.split('-')[0] || ''}</div>
                             <div class="lesson-details">
                                 <div class="lesson-name">${lesson.subject || ''}</div>
                                 <div class="lesson-place">${lesson.room || ''}</div>
@@ -968,17 +1068,17 @@
             }
             
             // Чаты
-            if (appData.chats && appData.chats.length > 0) {
+            if (appData.chats?.length > 0) {
                 html += `
                     <div class="section">
                         <div class="section-header" onclick="toggleSection(this)">
-                            <span>💬</span> ЧАТЫ
+                            <span>💬</span> Чаты
                             <span>▼</span>
                         </div>
                         <div class="section-content" id="chatsContainer">
                 `;
                 
-                appData.chats.forEach(chat => {
+                appData.chats.slice(0, 5).forEach(chat => {
                     const isHidden = hiddenChats.includes(`chat-${chat.id}`);
                     html += `
                         <div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat-${chat.id}" onclick="openChat('${chat.id}')">
@@ -989,7 +1089,7 @@
                                     <span class="time">${chat.time || ''}</span>
                                 </div>
                                 <div class="message">
-                                    <span class="sender">${chat.last_sender || ''}:</span> ${chat.last_message || ''}
+                                    <span class="sender">${chat.last_sender || ''}:</span> ${(chat.last_message || '').substring(0, 40)}${chat.last_message?.length > 40 ? '...' : ''}
                                 </div>
                             </div>
                             <span class="hide-btn" onclick="hideChat('chat-${chat.id}', event)">✕</span>
@@ -1005,36 +1105,32 @@
         
         function renderChatsPage() {
             const container = document.getElementById('tab-chats');
-            if (!container) return;
+            if (!container || !appData.chats) return;
             
             let html = `
                 <div class="section">
-                    <div class="section-header">💬 ВСЕ ЧАТЫ</div>
-                    <div class="section-content" id="chatsContainer2">
+                    <div class="section-header">💬 Все чаты</div>
+                    <div class="section-content">
             `;
             
-            if (appData.chats && appData.chats.length > 0) {
-                appData.chats.forEach(chat => {
-                    const isHidden = hiddenChats.includes(`chat-${chat.id}`);
-                    html += `
-                        <div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat2-${chat.id}" onclick="openChat('${chat.id}')">
-                            <div class="avatar">${chat.avatar || '💬'}</div>
-                            <div class="info">
-                                <div class="title-row">
-                                    <span class="title">${chat.name || 'Чат'}</span>
-                                    <span class="time">${chat.time || ''}</span>
-                                </div>
-                                <div class="message">
-                                    <span class="sender">${chat.last_sender || ''}:</span> ${chat.last_message || ''}
-                                </div>
+            appData.chats.forEach(chat => {
+                const isHidden = hiddenChats.includes(`chat-${chat.id}`);
+                html += `
+                    <div class="chat-item ${isHidden ? 'hidden' : ''}" id="chat2-${chat.id}" onclick="openChat('${chat.id}')">
+                        <div class="avatar">${chat.avatar || '💬'}</div>
+                        <div class="info">
+                            <div class="title-row">
+                                <span class="title">${chat.name || 'Чат'}</span>
+                                <span class="time">${chat.time || ''}</span>
                             </div>
-                            <span class="hide-btn" onclick="hideChat('chat-${chat.id}', event)">✕</span>
+                            <div class="message">
+                                <span class="sender">${chat.last_sender || ''}:</span> ${chat.last_message || ''}
+                            </div>
                         </div>
-                    `;
-                });
-            } else {
-                html += '<div style="padding: 20px; text-align: center;">Нет чатов</div>';
-            }
+                        <span class="hide-btn" onclick="hideChat('chat-${chat.id}', event)">✕</span>
+                    </div>
+                `;
+            });
             
             html += `</div></div>`;
             container.innerHTML = html;
@@ -1046,17 +1142,17 @@
             
             let html = `
                 <div class="section">
-                    <div class="section-header">📌 ВАЖНАЯ ИНФОРМАЦИЯ</div>
+                    <div class="section-header">📌 Вся важная информация</div>
                     <div class="section-content">
             `;
             
-            if (appData.important && appData.important.length > 0) {
+            if (appData.important?.length > 0) {
                 appData.important.forEach(item => {
                     html += `
                         <div class="important-card" onclick="showImportantDetails('${item.id}')">
                             <div class="sender">${item.sender || 'КПСС'}</div>
                             <div class="text">${item.text || ''}</div>
-                            <div class="time">${item.time || ''} • ${item.date || ''}</div>
+                            <div class="time">${item.time || ''}</div>
                         </div>
                     `;
                 });
@@ -1073,16 +1169,16 @@
             if (!container) return;
             
             const byDay = {};
-            if (appData.schedule) {
-                appData.schedule.forEach(lesson => {
+            appData.schedule?.forEach(lesson => {
+                if (lesson.day) {
                     if (!byDay[lesson.day]) byDay[lesson.day] = [];
                     byDay[lesson.day].push(lesson);
-                });
-            }
+                }
+            });
             
             let html = `
                 <div class="section">
-                    <div class="section-header">📅 ПОЛНОЕ РАСПИСАНИЕ</div>
+                    <div class="section-header">📅 Полное расписание</div>
                     <div class="section-content">
                         <div class="schedule-grid">
             `;
@@ -1096,7 +1192,7 @@
                                 <div class="lesson-time">${lesson.time || ''}</div>
                                 <div class="lesson-details">
                                     <div class="lesson-name">${lesson.subject || ''}</div>
-                                    <div class="lesson-place">${lesson.room || ''} • ${lesson.teacher || ''}</div>
+                                    <div class="lesson-place">${lesson.room || ''} · ${lesson.teacher || ''}</div>
                                 </div>
                             </div>
                         `;
@@ -1116,16 +1212,16 @@
             if (!container) return;
             
             const byCategory = {};
-            if (appData.hashtags) {
-                appData.hashtags.forEach(tag => {
+            appData.hashtags?.forEach(tag => {
+                if (tag.category) {
                     if (!byCategory[tag.category]) byCategory[tag.category] = [];
                     byCategory[tag.category].push(tag.tag);
-                });
-            }
+                }
+            });
             
             let html = `
                 <div class="section">
-                    <div class="section-header">✨ ВСЕ ХЭШТЕГИ</div>
+                    <div class="section-header">✨ Все хэштеги</div>
                     <div class="hashtags-container">
             `;
             
@@ -1157,20 +1253,20 @@
             
             let html = `
                 <div class="section">
-                    <div class="section-header">🖼️ ГАЛЕРЕЯ</div>
+                    <div class="section-header">🖼️ Галерея</div>
                     <div class="gallery-grid">
             `;
             
-            if (appData.gallery && appData.gallery.length > 0) {
-                appData.gallery.forEach(item => {
-                    const imgUrl = item.image_url && !item.image_url.includes('example.com') 
+            if (appData.gallery?.length > 0) {
+                appData.gallery.slice(0, 6).forEach(item => {
+                    const imgUrl = item.image_url?.includes('http') 
                         ? item.image_url 
-                        : 'https://via.placeholder.com/300x200/8B0000/FFD700?text=КПСС';
+                        : 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23f0f7ff\'/%3E%3Ctext x=\'50\' y=\'50\' font-size=\'12\' text-anchor=\'middle\' fill=\'%233498db\' dy=\'.3em\'%3E📷%3C/text%3E%3C/svg%3E';
                     
                     html += `
                         <div class="gallery-item" onclick="window.open('${imgUrl}', '_blank')">
-                            <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/300x200/8B0000/FFD700?text=КПСС'">
-                            <div class="caption">${item.title || ''}<br><small>${item.date || ''}</small></div>
+                            <img src="${imgUrl}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23f0f7ff\'/%3E%3Ctext x=\'50\' y=\'50\' font-size=\'12\' text-anchor=\'middle\' fill=\'%233498db\' dy=\'.3em\'%3E🖼️%3C/text%3E%3C/svg%3E'">
+                            <div class="caption">${item.title || 'Изображение'}</div>
                         </div>
                     `;
                 });
@@ -1183,7 +1279,6 @@
         }
         
         // ========== ФУНКЦИИ ==========
-        
         function toggleSection(header) {
             const content = header.nextElementSibling;
             const arrow = header.querySelector('span:last-child');
@@ -1203,9 +1298,11 @@
             
             document.getElementById('modalChatTitle').textContent = chat.name || 'Чат';
             document.getElementById('modalChatContent').innerHTML = `
-                <div style="margin-bottom: 10px;"><strong>${chat.last_sender || ''}:</strong></div>
-                <div style="margin-bottom: 10px; font-size: 16px;">${chat.last_message || ''}</div>
-                <div style="color: #FFD700; opacity: 0.7;">${chat.time || ''}</div>
+                <div style="background: #f8fafd; padding: 16px; border-radius: 12px;">
+                    <div style="font-weight: 500; margin-bottom: 8px;">${chat.last_sender || ''}</div>
+                    <div style="margin-bottom: 12px;">${chat.last_message || ''}</div>
+                    <div style="color: #95a5a6; font-size: 12px;">${chat.time || ''}</div>
+                </div>
             `;
             
             document.getElementById('chatModal').classList.add('active');
@@ -1228,12 +1325,11 @@
         
         function updateCounters() {
             if (!appData.chats) return;
-            
-            const visibleChats = appData.chats.length - hiddenChats.length;
+            const visible = appData.chats.length - hiddenChats.length;
             const badge = document.getElementById('chatsBadge');
             if (badge) {
-                badge.textContent = visibleChats;
-                badge.style.display = visibleChats > 0 ? 'inline' : 'none';
+                badge.textContent = visible;
+                badge.style.display = visible > 0 ? 'inline' : 'none';
             }
         }
         
@@ -1243,9 +1339,11 @@
             
             document.getElementById('infoModalTitle').textContent = 'Важная информация';
             document.getElementById('infoModalContent').innerHTML = `
-                <div style="margin-bottom: 10px;"><strong>${item.sender || 'КПСС'}</strong></div>
-                <div style="margin-bottom: 10px; font-size: 18px;">${item.text || ''}</div>
-                <div style="color: #FFD700; opacity: 0.7;">${item.time || ''} • ${item.date || ''}</div>
+                <div style="background: #f8fafd; padding: 16px; border-radius: 12px;">
+                    <div style="font-weight: 500; color: #3498db; margin-bottom: 8px;">${item.sender || 'КПСС'}</div>
+                    <div style="margin-bottom: 12px;">${item.text || ''}</div>
+                    <div style="color: #95a5a6;">${item.time || ''} · ${item.date || ''}</div>
+                </div>
             `;
             
             document.getElementById('infoModal').classList.add('active');
@@ -1257,50 +1355,51 @@
             
             document.getElementById('infoModalTitle').textContent = lesson.subject || 'Занятие';
             document.getElementById('infoModalContent').innerHTML = `
-                <div style="margin-bottom: 10px;"><strong>Время:</strong> ${lesson.time || ''}</div>
-                <div style="margin-bottom: 10px;"><strong>Аудитория:</strong> ${lesson.room || ''}</div>
-                <div style="margin-bottom: 10px;"><strong>Преподаватель:</strong> ${lesson.teacher || ''}</div>
-                <div style="color: #FFD700; opacity: 0.7;">${lesson.day || ''}</div>
+                <div style="background: #f8fafd; padding: 16px; border-radius: 12px;">
+                    <div style="margin-bottom: 8px;"><span style="color: #7f8c8d;">Время:</span> ${lesson.time || ''}</div>
+                    <div style="margin-bottom: 8px;"><span style="color: #7f8c8d;">Аудитория:</span> ${lesson.room || ''}</div>
+                    <div style="margin-bottom: 8px;"><span style="color: #7f8c8d;">Преподаватель:</span> ${lesson.teacher || ''}</div>
+                    <div style="color: #95a5a6;">${lesson.day || ''}</div>
+                </div>
             `;
             
             document.getElementById('infoModal').classList.add('active');
         }
         
         function searchByHashtag(tag) {
-            document.getElementById('infoModalTitle').textContent = 'Поиск по хэштегу';
+            document.getElementById('infoModalTitle').textContent = 'Поиск';
             document.getElementById('infoModalContent').innerHTML = `
                 <div style="text-align: center; padding: 20px;">
-                    <div style="font-size: 24px; margin-bottom: 10px;">🔍</div>
-                    <div>Поиск: ${tag}</div>
+                    <span class="hashtag" style="font-size: 16px;">${tag}</span>
                 </div>
             `;
             document.getElementById('infoModal').classList.add('active');
         }
         
         function toggleSearch() {
-            const searchBox = document.getElementById('searchBox');
-            searchBox.style.display = searchBox.style.display === 'none' ? 'block' : 'none';
-            if (searchBox.style.display === 'block') {
+            const box = document.getElementById('searchBox');
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+            if (box.style.display === 'block') {
                 document.getElementById('searchInput').focus();
             }
         }
         
         function searchChats() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const chats = document.querySelectorAll('.chat-item');
-            
-            chats.forEach(chat => {
+            const text = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.chat-item').forEach(chat => {
                 const title = chat.querySelector('.title')?.textContent.toLowerCase() || '';
-                chat.style.display = title.includes(searchText) ? 'flex' : 'none';
+                chat.style.display = title.includes(text) ? 'flex' : 'none';
             });
         }
         
         function showMenu() {
-            document.getElementById('infoModalTitle').textContent = 'МЕНЮ';
+            document.getElementById('infoModalTitle').textContent = 'Меню';
             document.getElementById('infoModalContent').innerHTML = `
-                <div style="padding: 10px; cursor: pointer; margin-bottom: 5px;" onclick="showAllChats()">Показать все чаты</div>
-                <div style="padding: 10px; cursor: pointer; margin-bottom: 5px;" onclick="refreshData()">Обновить данные</div>
-                <div style="padding: 10px; cursor: pointer;" onclick="location.reload()">Перезагрузить</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div onclick="showAllChats()" style="padding: 12px; background: #f8fafd; border-radius: 12px; cursor: pointer;">Показать все чаты</div>
+                    <div onclick="refreshData()" style="padding: 12px; background: #f8fafd; border-radius: 12px; cursor: pointer;">Обновить данные</div>
+                    <div onclick="location.reload()" style="padding: 12px; background: #f8fafd; border-radius: 12px; cursor: pointer;">Перезагрузить</div>
+                </div>
             `;
             document.getElementById('infoModal').classList.add('active');
         }
@@ -1308,18 +1407,18 @@
         function showAllChats() {
             hiddenChats = [];
             localStorage.removeItem('hiddenChats');
-            document.querySelectorAll('.chat-item').forEach(chat => chat.classList.remove('hidden'));
+            document.querySelectorAll('.chat-item').forEach(c => c.classList.remove('hidden'));
             updateCounters();
             closeModal('infoModal');
         }
         
         function refreshData() {
             closeModal('infoModal');
+            loadAttempts = 0;
             loadAllData();
         }
         
         // ========== UI ==========
-        
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('closed');
             document.getElementById('mainContent').classList.toggle('expanded');
@@ -1333,16 +1432,12 @@
         }
         
         function switchMainTab(tabName) {
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
             event.currentTarget.classList.add('active');
             
             const titles = {
-                'home': 'КПСС',
-                'chats': 'ЧАТЫ',
-                'schedule': 'РАСПИСАНИЕ',
-                'hashtags': 'ХЭШТЕГИ',
-                'gallery': 'ГАЛЕРЕЯ',
-                'important': 'ВАЖНОЕ'
+                'home': 'КПСС', 'chats': 'Чаты', 'schedule': 'Расписание',
+                'hashtags': 'Хэштеги', 'gallery': 'Галерея', 'important': 'Важное'
             };
             document.getElementById('mainTitle').textContent = titles[tabName];
             
@@ -1354,19 +1449,19 @@
         }
         
         function switchTab(tabName, element) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             
             if (element) {
                 element.classList.add('active');
             } else {
-                document.querySelectorAll('.tab').forEach(tab => {
-                    if (tab.textContent.toLowerCase().includes(tabName)) {
-                        tab.classList.add('active');
+                document.querySelectorAll('.tab').forEach(t => {
+                    if (t.textContent.toLowerCase().includes(tabName)) {
+                        t.classList.add('active');
                     }
                 });
             }
             
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
             const validTabs = ['all', 'chats', 'important', 'schedule', 'gallery', 'hashtags'];
             if (validTabs.includes(tabName)) {
@@ -1384,34 +1479,37 @@
         
         function showError(message) {
             document.getElementById('error').style.display = 'block';
-            document.getElementById('errorMessage').textContent = message || 'Неизвестная ошибка';
+            document.getElementById('errorMessage').textContent = message;
             document.getElementById('app').style.display = 'none';
         }
         
         function showUpdateIndicator() {
-            const indicator = document.getElementById('updateIndicator');
-            indicator.classList.add('show');
-            setTimeout(() => indicator.classList.remove('show'), 3000);
+            const ind = document.getElementById('updateIndicator');
+            ind.classList.add('show');
+            setTimeout(() => ind.classList.remove('show'), 2000);
         }
         
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
         }
         
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        // ========== СТАРТ ==========
         window.onload = function() {
             const saved = localStorage.getItem('hiddenChats');
             if (saved) hiddenChats = JSON.parse(saved);
             
             loadAllData();
             
-            window.onclick = function(event) {
-                if (event.target.classList.contains('modal')) {
-                    event.target.classList.remove('active');
+            window.onclick = function(e) {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('active');
                 }
             };
             
-            setInterval(loadAllData, 5 * 60 * 1000);
+            setInterval(() => {
+                loadAttempts = 0;
+                loadAllData();
+            }, 5 * 60 * 1000);
         };
     </script>
 </body>
