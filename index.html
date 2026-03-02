@@ -24,7 +24,6 @@
     .menu-item:hover{background:#404040;color:#ff99cc;}
     .menu-item.active{background:#404040;border-left-color:#ff99cc;color:#ff99cc;font-weight:500;}
     .menu-item .icon{font-size:18px;width:24px;text-align:center;}
-    .menu-item .badge{background:#ff99cc;color:#2d2d2d;padding:2px 8px;border-radius:30px;font-size:11px;font-weight:600;}
 
     .main-content{flex:1;margin-left:280px;width:calc(100% - 280px);transition:margin-left .2s ease;height:100vh;overflow-y:auto;background:#2d2d2d;}
     .main-content.expanded{margin-left:0;width:100%;}
@@ -38,35 +37,15 @@
     .header-actions span{cursor:pointer;font-size:18px;padding:6px;border-radius:8px;}
     .header-actions span:hover{background:#404040;color:#ff99cc;}
 
-    .tabs-container{background:#363636;border-bottom:1px solid #404040;position:sticky;top:60px;z-index:90;}
-    .tabs{display:flex;overflow-x:auto;scrollbar-width:none;padding:0 12px;gap:4px;}
-    .tabs::-webkit-scrollbar{display:none;}
-    .tab{padding:12px 16px;color:#b0b0b0;font-weight:500;font-size:14px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;}
-    .tab:hover{color:#ff99cc;}
-    .tab.active{color:#ff99cc;border-bottom-color:#ff99cc;}
-
-    .tab-content{display:none;padding:12px;}
-    .tab-content.active{display:block;}
+    /* pages */
+    .page{display:none;padding:12px;}
+    .page.active{display:block;}
 
     .section{background:#363636;border-radius:16px;margin-bottom:16px;overflow:hidden;border:1px solid #404040;}
     .section-header{padding:16px 20px;color:#ff99cc;font-size:15px;font-weight:600;display:flex;align-items:center;gap:10px;border-bottom:1px solid #404040;cursor:pointer;}
     .section-header span:first-child{font-size:18px;}
     .section-header span:last-child{margin-left:auto;color:#808080;font-size:14px;}
     .section-content{padding:4px 0;}
-
-    .chat-item{display:flex;align-items:center;padding:12px 20px;background:#363636;border-bottom:1px solid #404040;cursor:pointer;transition:background-color .2s;}
-    .chat-item:last-child{border-bottom:none;}
-    .chat-item:hover{background:#404040;}
-    .chat-item .avatar{width:48px;height:48px;border-radius:50%;background:#404040;margin-right:14px;display:flex;align-items:center;justify-content:center;color:#ff99cc;font-size:20px;flex-shrink:0;border:1px solid #505050;}
-    .chat-item .info{flex:1;min-width:0;}
-    .chat-item .title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-    .chat-item .title{font-size:16px;font-weight:500;color:#f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .chat-item .time{font-size:11px;color:#808080;margin-left:8px;flex-shrink:0;}
-    .chat-item .message{color:#b0b0b0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .chat-item .sender{color:#ff99cc;font-weight:500;}
-    .chat-item .hide-btn{color:#ff99cc;font-size:12px;padding:6px 10px;border-radius:30px;background:#404040;margin-left:12px;cursor:pointer;opacity:.8;transition:opacity .2s;}
-    .chat-item .hide-btn:hover{opacity:1;background:#505050;}
-    .chat-item.hidden{display:none;}
 
     .important-card{background:#404040;margin:12px 16px;padding:16px;border-radius:14px;border-left:4px solid #ff99cc;}
     .important-card .sender{color:#ff99cc;font-size:13px;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px;}
@@ -89,8 +68,9 @@
     .hashtag-category{margin-bottom:20px;}
     .category-title{color:#b0b0b0;font-size:12px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:12px;font-weight:600;}
     .hashtag-cloud{display:flex;flex-wrap:wrap;gap:8px;}
-    .hashtag{background:#404040;color:#ff99cc;padding:8px 14px;border-radius:30px;font-size:13px;cursor:pointer;transition:all .2s;border:1px solid #505050;}
+    .hashtag{background:#404040;color:#ff99cc;padding:8px 14px;border-radius:30px;font-size:13px;cursor:pointer;transition:all .2s;border:1px solid #505050;user-select:none;}
     .hashtag:hover{background:#ff99cc;color:#2d2d2d;border-color:#ff99cc;}
+    .hashtag.active{background:#ff99cc;color:#2d2d2d;border-color:#ff99cc;}
 
     .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px;}
     .gallery-item{background:#404040;border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid #505050;transition:all .2s;aspect-ratio:1/1;display:flex;flex-direction:column;}
@@ -105,14 +85,27 @@
     .image-modal-close{position:absolute;top:-40px;right:0;color:#ff99cc;font-size:30px;cursor:pointer;background:none;border:none;padding:10px;}
     .image-modal-close:hover{color:#fff;}
 
-    .search-box{padding:12px 16px;background:#363636;border-bottom:1px solid #404040;}
+    .search-box{padding:12px 16px;background:#363636;border-bottom:1px solid #404040;position:sticky;top:53px;z-index:90;}
     .search-box input{width:100%;padding:14px 18px;background:#404040;border:1px solid #505050;border-radius:30px;color:#f0f0f0;font-size:14px;transition:all .2s;}
     .search-box input:focus{outline:none;border-color:#ff99cc;background:#454545;}
     .search-box input::placeholder{color:#808080;}
 
+    /* "Прочее" list */
+    .other-list{padding:10px 0;}
+    .other-item{display:flex;gap:14px;padding:14px 16px;border-bottom:1px solid #404040;cursor:default;}
+    .other-item:last-child{border-bottom:none;}
+    .other-icon{width:44px;height:44px;border-radius:12px;background:#404040;border:1px solid #505050;display:flex;align-items:center;justify-content:center;color:#ff99cc;font-size:18px;flex-shrink:0;}
+    .other-body{flex:1;min-width:0;}
+    .other-title{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    .other-title a{color:#f0f0f0;text-decoration:none;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%;}
+    .other-title a:hover{color:#ff99cc;}
+    .other-date{color:#808080;font-size:11px;flex-shrink:0;}
+    .other-text{color:#b0b0b0;font-size:13px;line-height:1.35;margin-bottom:8px;}
+    .other-tags{display:flex;flex-wrap:wrap;gap:8px;}
+
     .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;justify-content:center;align-items:center;backdrop-filter:blur(4px);}
     .modal.active{display:flex;}
-    .modal-content{background:#363636;border-radius:24px;padding:24px;max-width:90%;max-height:80vh;overflow-y:auto;width:380px;border:1px solid #505050;}
+    .modal-content{background:#363636;border-radius:24px;padding:24px;max-width:90%;max-height:80vh;overflow-y:auto;width:420px;border:1px solid #505050;}
     .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;color:#ff99cc;font-size:18px;font-weight:600;padding-bottom:12px;border-bottom:1px solid #404040;}
     .modal-close{font-size:22px;cursor:pointer;color:#808080;transition:color .2s;}
     .modal-close:hover{color:#ff99cc;}
@@ -131,6 +124,7 @@
       .sidebar{position:fixed;}
       .main-content{margin-left:0;width:100%;}
       .content-header h1{font-size:16px;}
+      .search-box{top:53px;}
     }
   </style>
 </head>
@@ -150,26 +144,25 @@
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <h2>КПСС</h2>
-        <span id="membersCount">—</span>
+        <span id="membersCount">данные из таблицы</span>
       </div>
       <div class="sidebar-menu">
-        <div class="menu-item active" onclick="switchMainTab('home'); closeSidebarOnMobile()">
+        <div class="menu-item active" onclick="switchPage('home', this); closeSidebarOnMobile()">
           <span class="icon">🏠</span><span class="title">Главная</span>
         </div>
-        <div class="menu-item" onclick="switchMainTab('chats'); closeSidebarOnMobile()">
-          <span class="icon">💬</span><span class="title">Чаты</span>
-          <span class="badge" id="chatsBadge">0</span>
-        </div>
-        <div class="menu-item" onclick="switchMainTab('schedule'); closeSidebarOnMobile()">
+        <div class="menu-item" onclick="switchPage('schedule', this); closeSidebarOnMobile()">
           <span class="icon">📅</span><span class="title">Расписание</span>
         </div>
-        <div class="menu-item" onclick="switchMainTab('hashtags'); closeSidebarOnMobile()">
+        <div class="menu-item" onclick="switchPage('hashtags', this); closeSidebarOnMobile()">
           <span class="icon">✨</span><span class="title">Хэштеги</span>
         </div>
-        <div class="menu-item" onclick="switchMainTab('gallery'); closeSidebarOnMobile()">
+        <div class="menu-item" onclick="switchPage('other', this); closeSidebarOnMobile()">
+          <span class="icon">🔗</span><span class="title">Прочее</span>
+        </div>
+        <div class="menu-item" onclick="switchPage('gallery', this); closeSidebarOnMobile()">
           <span class="icon">🖼️</span><span class="title">Галерея</span>
         </div>
-        <div class="menu-item" onclick="switchMainTab('important'); closeSidebarOnMobile()">
+        <div class="menu-item" onclick="switchPage('important', this); closeSidebarOnMobile()">
           <span class="icon">📌</span><span class="title">Важное</span>
         </div>
       </div>
@@ -179,53 +172,31 @@
       <div class="content-header">
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
         <h1 id="mainTitle">КПСС</h1>
-        <span id="headerMembers">—</span>
+        <span id="headerMembers">данные из таблицы</span>
         <div class="header-actions">
-          <span onclick="toggleSearch()">🔍</span>
           <span onclick="showMenu()">⋮</span>
         </div>
       </div>
 
-      <div class="tabs-container">
-        <div class="tabs" id="tabs">
-          <div class="tab active" onclick="switchTab('all', this)">Все</div>
-          <div class="tab" onclick="switchTab('chats', this)">Чаты</div>
-          <div class="tab" onclick="switchTab('important', this)">Важное</div>
-          <div class="tab" onclick="switchTab('schedule', this)">Расписание</div>
-          <div class="tab" onclick="switchTab('gallery', this)">Галерея</div>
-          <div class="tab" onclick="switchTab('hashtags', this)">Хэштеги</div>
-        </div>
+      <!-- Поиск (используется только для "Прочее") -->
+      <div class="search-box" id="otherSearchBox" style="display:none;">
+        <input type="text" placeholder="Поиск по ссылкам или #хэштегам..." id="otherSearchInput" onkeyup="renderOtherPage()">
       </div>
 
-      <div class="search-box" id="searchBox" style="display:none;">
-        <input type="text" placeholder="Поиск по чатам..." id="searchInput" onkeyup="searchChats()">
-      </div>
-
-      <div id="tabContent">
-        <div class="tab-content active" id="tab-all"></div>
-        <div class="tab-content" id="tab-chats"></div>
-        <div class="tab-content" id="tab-important"></div>
-        <div class="tab-content" id="tab-schedule"></div>
-        <div class="tab-content" id="tab-gallery"></div>
-        <div class="tab-content" id="tab-hashtags"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="chatModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span id="modalChatTitle">Чат</span>
-        <span class="modal-close" onclick="closeModal('chatModal')">✕</span>
-      </div>
-      <div class="modal-body" id="modalChatContent"></div>
+      <!-- Pages -->
+      <div class="page active" id="page-home"></div>
+      <div class="page" id="page-schedule"></div>
+      <div class="page" id="page-hashtags"></div>
+      <div class="page" id="page-other"></div>
+      <div class="page" id="page-gallery"></div>
+      <div class="page" id="page-important"></div>
     </div>
   </div>
 
   <div class="modal" id="infoModal">
     <div class="modal-content">
       <div class="modal-header">
-        <span id="infoModalTitle">Информация</span>
+        <span id="infoModalTitle">Меню</span>
         <span class="modal-close" onclick="closeModal('infoModal')">✕</span>
       </div>
       <div class="modal-body" id="infoModalContent"></div>
@@ -242,20 +213,19 @@
   <div class="update-indicator" id="updateIndicator">Обновлено</div>
 
   <script>
-    // ======== ПУБЛИЧНАЯ ССЫЛКА И ID (как у тебя) ========
+    // ======== ПУБЛИЧНАЯ ССЫЛКА ========
     const PUBLISHED_HTML_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTqqPvylzn62Qvj834syJVyZH9bWKQjlsPYZdUjTZNt9R-AEQu36aOfCK9WU6CpA-B9535kNFka4l3t/pubhtml";
     const SPREADSHEET_ID = "2PACX-1vTqqPvylzn62Qvj834syJVyZH9bWKQjlsPYZdUjTZNt9R-AEQu36aOfCK9WU6CpA-B9535kNFka4l3t";
 
     // ======== ДАННЫЕ ========
-    let appData = { important: [], chats: [], schedule: [], hashtags: [], gallery: [] };
-    let hiddenChats = [];
+    let appData = { important: [], schedule: [], hashtags: [], gallery: [], other: [] };
     let loadAttempts = 0;
+
+    // ======== ФИЛЬТР "ПРОЧЕЕ" ========
+    let otherActiveTag = ""; // #tag
 
     // ======== START ========
     window.onload = function () {
-      const saved = localStorage.getItem("hiddenChats");
-      if (saved) hiddenChats = JSON.parse(saved);
-
       loadAllData();
       setInterval(() => { loadAttempts = 0; loadAllData(); }, 5 * 60 * 1000);
 
@@ -265,7 +235,7 @@
       };
     };
 
-    // ======== ЗАГРУЗКА ДАННЫХ ========
+    // ======== ЗАГРУЗКА ========
     async function loadAllData() {
       showLoading(true);
       loadAttempts++;
@@ -274,14 +244,11 @@
         const pubhtml = await fetchWithTimeout(PUBLISHED_HTML_URL);
         if (!pubhtml) throw new Error("Не удалось получить pubhtml");
 
-        // достаём все вкладки (gid + название) прямо из pubhtml
         const sheets = extractSheetsFromPubhtml(pubhtml);
         if (!sheets.length) throw new Error("Не найдено ни одной вкладки (gid) в pubhtml");
 
-        // временно соберём всё, что найдём
-        const temp = { important: [], chats: [], schedule: [], hashtags: [], gallery: [] };
+        const temp = { important: [], schedule: [], hashtags: [], gallery: [], other: [] };
 
-        // грузим все вкладки по gid, определяем тип по заголовкам
         for (const sh of sheets) {
           const csvUrl = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv&gid=${encodeURIComponent(sh.gid)}&single=true`;
           const csvText = await fetchWithTimeout(csvUrl);
@@ -302,7 +269,6 @@
 
         if (hasData()) {
           renderAll();
-          updateCounters();
           showLoading(false);
           showUpdateIndicator();
         } else {
@@ -322,20 +288,19 @@
 
     function hasData() {
       return (appData.important?.length || 0) > 0 ||
-             (appData.chats?.length || 0) > 0 ||
              (appData.schedule?.length || 0) > 0 ||
              (appData.hashtags?.length || 0) > 0 ||
-             (appData.gallery?.length || 0) > 0;
+             (appData.gallery?.length || 0) > 0 ||
+             (appData.other?.length || 0) > 0;
     }
 
-    // ======== ДОСТАЁМ GID И НАЗВАНИЯ ВКЛАДОК ИЗ pubhtml ========
+    // ======== ВЫТАСКИВАЕМ GID ИЗ pubhtml ========
     function extractSheetsFromPubhtml(html) {
       try {
         const doc = new DOMParser().parseFromString(html, "text/html");
         const links = Array.from(doc.querySelectorAll("a[href*='gid=']"));
 
         const found = new Map(); // gid -> title
-
         for (const a of links) {
           const href = a.getAttribute("href") || "";
           const m = href.match(/gid=(\d+)/);
@@ -345,7 +310,6 @@
           if (!found.has(gid)) found.set(gid, title);
         }
 
-        // если ссылок нет, попробуем regex (на всякий)
         if (!found.size) {
           const re = /gid=(\d+)/g;
           let m;
@@ -361,15 +325,12 @@
       }
     }
 
-    // ======== ОПРЕДЕЛЯЕМ ТИП ЛИСТА ПО ЗАГОЛОВКАМ (ТОЛЬКО ТО, ЧТО ЕСТЬ В ТАБЛИЦЕ) ========
+    // ======== ОПРЕДЕЛЯЕМ ТИП ЛИСТА ПО ЗАГОЛОВКАМ ========
     function detectSheetType(headers) {
       const h = headers.map(x => x.toLowerCase().trim());
 
       // important: id,sender,text,time,date,(link optional)
       if (h.includes("sender") && h.includes("text") && (h.includes("time") || h.includes("date"))) return "important";
-
-      // chats: id,name,avatar,last_sender,last_message,time
-      if (h.includes("name") && h.includes("last_sender") && h.includes("last_message")) return "chats";
 
       // schedule: id,day,time,subject,room,teacher
       if (h.includes("day") && h.includes("time") && h.includes("subject")) return "schedule";
@@ -379,6 +340,9 @@
 
       // gallery: id,title,image_url,date
       if (h.includes("title") && (h.includes("image_url") || h.includes("image"))) return "gallery";
+
+      // other: id,title,url,text,hashtags,date  (text/date optional)
+      if (h.includes("title") && h.includes("url") && (h.includes("hashtags") || h.includes("tags"))) return "other";
 
       return null;
     }
@@ -400,7 +364,7 @@
       return out;
     }
 
-    // ======== НОРМАЛЬНЫЙ CSV ПАРСЕР ========
+    // ======== CSV ПАРСЕР ========
     function parseCsv(text) {
       const rows = [];
       let row = [];
@@ -414,39 +378,18 @@
         const next = text[i + 1];
 
         if (ch === '"') {
-          if (inQuotes && next === '"') {
-            cur += '"';
-            i++;
-          } else {
-            inQuotes = !inQuotes;
-          }
+          if (inQuotes && next === '"') { cur += '"'; i++; }
+          else { inQuotes = !inQuotes; }
           continue;
         }
-
-        if (ch === "," && !inQuotes) {
-          row.push(cur);
-          cur = "";
-          continue;
-        }
-
-        if (ch === "\n" && !inQuotes) {
-          row.push(cur);
-          rows.push(row);
-          row = [];
-          cur = "";
-          continue;
-        }
-
+        if (ch === "," && !inQuotes) { row.push(cur); cur = ""; continue; }
+        if (ch === "\n" && !inQuotes) { row.push(cur); rows.push(row); row = []; cur = ""; continue; }
         cur += ch;
       }
-
       row.push(cur);
       rows.push(row);
 
-      while (rows.length && rows[rows.length - 1].every(v => (v ?? "").toString().trim() === "")) {
-        rows.pop();
-      }
-
+      while (rows.length && rows[rows.length - 1].every(v => (v ?? "").toString().trim() === "")) rows.pop();
       return rows;
     }
 
@@ -465,21 +408,16 @@
 
     // ======== РЕНДЕР ========
     function renderAll() {
-      renderMainPage();
-      renderChatsPage();
-      renderImportantPage();
+      renderHomePage();
       renderSchedulePage();
       renderHashtagsPage();
+      renderOtherPage();
       renderGalleryPage();
-
-      // если у тебя реально есть участники в таблице — добавь колонку members_count на любом листе,
-      // но ты просил без затычек, поэтому просто ставим фикс “—”
-      document.getElementById("membersCount").textContent = "данные из таблицы";
-      document.getElementById("headerMembers").textContent = "данные из таблицы";
+      renderImportantPage();
     }
 
-    function renderMainPage() {
-      const container = document.getElementById("tab-all");
+    function renderHomePage() {
+      const container = document.getElementById("page-home");
       if (!container) return;
 
       let html = "";
@@ -501,77 +439,53 @@
 
       if (appData.schedule?.length) {
         html += `<div class="section">
-          <div class="section-header" onclick="toggleSection(this)"><span>📅</span> Расписание<span>▼</span></div>
+          <div class="section-header" onclick="toggleSection(this)"><span>📅</span> Ближайшее<span>▼</span></div>
           <div class="section-content"><div class="schedule-grid">`;
-        appData.schedule.slice(0, 3).forEach(lesson => {
-          const start = (lesson.time || "").split("-")[0] || "";
+        appData.schedule.slice(0, 4).forEach(lesson => {
           html += `<div class="schedule-lesson">
-              <div class="lesson-time">${escapeHtml(start)}</div>
+              <div class="lesson-time">${escapeHtml(lesson.time || "")}</div>
               <div class="lesson-details">
                 <div class="lesson-name">${escapeHtml(lesson.subject || "")}</div>
-                <div class="lesson-place">${escapeHtml(lesson.room || "")}</div>
+                <div class="lesson-place">${escapeHtml(lesson.room || "")} ${lesson.teacher ? "· " + escapeHtml(lesson.teacher) : ""}</div>
               </div>
             </div>`;
         });
         html += `</div></div></div>`;
       }
 
-      if (appData.chats?.length) {
+      if (appData.other?.length) {
         html += `<div class="section">
-          <div class="section-header" onclick="toggleSection(this)"><span>💬</span> Чаты<span>▼</span></div>
-          <div class="section-content">`;
-        appData.chats.slice(0, 5).forEach(chat => {
-          const id = `chat-${chat.id}`;
-          const isHidden = hiddenChats.includes(id);
-          html += `<div class="chat-item ${isHidden ? "hidden" : ""}" id="${id}" onclick="openChat('${escapeJs(chat.id)}')">
-              <div class="avatar">${escapeHtml(chat.avatar || "💬")}</div>
-              <div class="info">
-                <div class="title-row">
-                  <span class="title">${escapeHtml(chat.name || "")}</span>
-                  <span class="time">${escapeHtml(chat.time || "")}</span>
+          <div class="section-header" onclick="toggleSection(this)"><span>🔗</span> Прочее<span>▼</span></div>
+          <div class="section-content"><div class="other-list">`;
+
+        appData.other.slice(0, 4).forEach(item => {
+          const url = item.url || "";
+          const title = item.title || "";
+          const text = item.text || "";
+          const date = item.date || "";
+          const tags = splitTags(item.hashtags || item.tags || "");
+
+          html += `<div class="other-item">
+              <div class="other-icon">🔗</div>
+              <div class="other-body">
+                <div class="other-title">
+                  <a href="${escapeAttr(url)}" target="_blank" title="${escapeAttr(url)}">${escapeHtml(title)}</a>
+                  <span class="other-date">${escapeHtml(date)}</span>
                 </div>
-                <div class="message"><span class="sender">${escapeHtml(chat.last_sender || "")}:</span> ${escapeHtml((chat.last_message || "").substring(0, 40))}</div>
+                ${text ? `<div class="other-text">${escapeHtml(text)}</div>` : ``}
+                ${tags.length ? `<div class="other-tags">${tags.slice(0,6).map(t => `<span class="hashtag" onclick="openOtherWithTag('${escapeJs(t)}')">${escapeHtml(t)}</span>`).join("")}</div>` : ``}
               </div>
-              <span class="hide-btn" onclick="hideChat('${id}', event)">✕</span>
             </div>`;
         });
-        html += `</div></div>`;
+
+        html += `</div></div></div>`;
       }
 
       container.innerHTML = html || `<div class="section" style="padding:20px;text-align:center;">Нет данных</div>`;
     }
 
-    function renderChatsPage() {
-      const container = document.getElementById("tab-chats");
-      if (!container) return;
-
-      if (!appData.chats?.length) {
-        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет чатов</div>`;
-        return;
-      }
-
-      let html = `<div class="section"><div class="section-header">💬 Все чаты</div><div class="section-content">`;
-      appData.chats.forEach(chat => {
-        const id = `chat-${chat.id}`;
-        const isHidden = hiddenChats.includes(id);
-        html += `<div class="chat-item ${isHidden ? "hidden" : ""}" id="${id}-list" onclick="openChat('${escapeJs(chat.id)}')">
-            <div class="avatar">${escapeHtml(chat.avatar || "💬")}</div>
-            <div class="info">
-              <div class="title-row">
-                <span class="title">${escapeHtml(chat.name || "")}</span>
-                <span class="time">${escapeHtml(chat.time || "")}</span>
-              </div>
-              <div class="message"><span class="sender">${escapeHtml(chat.last_sender || "")}:</span> ${escapeHtml(chat.last_message || "")}</div>
-            </div>
-            <span class="hide-btn" onclick="hideChat('${id}', event)">✕</span>
-          </div>`;
-      });
-      html += `</div></div>`;
-      container.innerHTML = html;
-    }
-
     function renderImportantPage() {
-      const container = document.getElementById("tab-important");
+      const container = document.getElementById("page-important");
       if (!container) return;
 
       if (!appData.important?.length) {
@@ -579,7 +493,7 @@
         return;
       }
 
-      let html = `<div class="section"><div class="section-header">📌 Вся важная информация</div><div class="section-content">`;
+      let html = `<div class="section"><div class="section-header"><span>📌</span> Вся важная информация<span></span></div><div class="section-content">`;
       appData.important.forEach(item => {
         html += `<div class="important-card">
             <div class="sender">${escapeHtml(item.sender || "")}</div>
@@ -593,7 +507,7 @@
     }
 
     function renderSchedulePage() {
-      const container = document.getElementById("tab-schedule");
+      const container = document.getElementById("page-schedule");
       if (!container) return;
 
       if (!appData.schedule?.length) {
@@ -609,7 +523,7 @@
         byDay[day].push(lesson);
       });
 
-      let html = `<div class="section"><div class="section-header">📅 Полное расписание</div><div class="section-content"><div class="schedule-grid">`;
+      let html = `<div class="section"><div class="section-header"><span>📅</span> Полное расписание<span></span></div><div class="section-content"><div class="schedule-grid">`;
       Object.keys(byDay).forEach(day => {
         html += `<div class="schedule-day"><h3>${escapeHtml(day)}</h3>`;
         byDay[day].forEach(lesson => {
@@ -628,7 +542,7 @@
     }
 
     function renderHashtagsPage() {
-      const container = document.getElementById("tab-hashtags");
+      const container = document.getElementById("page-hashtags");
       if (!container) return;
 
       if (!appData.hashtags?.length) {
@@ -645,22 +559,27 @@
         byCategory[cat].push(tag);
       });
 
-      let html = `<div class="section"><div class="section-header">✨ Все хэштеги</div><div class="hashtags-container">`;
+      let html = `<div class="section">
+        <div class="section-header"><span>✨</span> Все хэштеги<span></span></div>
+        <div class="hashtags-container">`;
+
       Object.keys(byCategory).forEach(category => {
         html += `<div class="hashtag-category">
             <div class="category-title">${escapeHtml(category)}</div>
             <div class="hashtag-cloud">`;
         byCategory[category].forEach(tag => {
-          html += `<span class="hashtag" onclick="searchByHashtag('${escapeJs(tag)}')">${escapeHtml(tag)}</span>`;
+          // клик по тегу открывает "Прочее" с фильтром
+          html += `<span class="hashtag" onclick="openOtherWithTag('${escapeJs(tag)}')">${escapeHtml(tag)}</span>`;
         });
         html += `</div></div>`;
       });
+
       html += `</div></div>`;
       container.innerHTML = html;
     }
 
     function renderGalleryPage() {
-      const container = document.getElementById("tab-gallery");
+      const container = document.getElementById("page-gallery");
       if (!container) return;
 
       if (!appData.gallery?.length) {
@@ -668,20 +587,172 @@
         return;
       }
 
-      let html = `<div class="section"><div class="section-header">🖼️ Галерея</div><div class="gallery-grid">`;
+      let html = `<div class="section"><div class="section-header"><span>🖼️</span> Галерея<span></span></div><div class="gallery-grid">`;
       appData.gallery.forEach(item => {
         const imgUrl = item.image_url || item.image || "";
         html += `<div class="gallery-item" onclick="openImageModal('${escapeJs(imgUrl)}')">`;
-        if (imgUrl) {
-          html += `<img class="gallery-image" src="${escapeAttr(imgUrl)}" onerror="this.style.display='none'">`;
-        }
+        if (imgUrl) html += `<img class="gallery-image" src="${escapeAttr(imgUrl)}" onerror="this.style.display='none'">`;
         html += `<div class="gallery-caption">${escapeHtml(item.title || "")}</div></div>`;
       });
       html += `</div></div>`;
       container.innerHTML = html;
     }
 
-    // ======== UI / ACTIONS ========
+    function renderOtherPage() {
+      const container = document.getElementById("page-other");
+      if (!container) return;
+
+      const q = (document.getElementById("otherSearchInput")?.value || "").trim().toLowerCase();
+      const tagFilter = (otherActiveTag || "").trim().toLowerCase();
+
+      const items = (appData.other || []).filter(item => {
+        const title = (item.title || "").toLowerCase();
+        const text = (item.text || "").toLowerCase();
+        const url = (item.url || "").toLowerCase();
+        const tags = splitTags(item.hashtags || item.tags || "").map(t => t.toLowerCase());
+
+        // фильтр по активному тегу (если выбран)
+        if (tagFilter) {
+          if (!tags.includes(tagFilter)) return false;
+        }
+
+        // поиск: по словам или по #тегу
+        if (!q) return true;
+
+        // если пользователь ввёл "#..."
+        if (q.startsWith("#")) {
+          return tags.some(t => t.includes(q));
+        }
+
+        return title.includes(q) || text.includes(q) || url.includes(q) || tags.some(t => t.includes(q));
+      });
+
+      let html = `<div class="section">
+        <div class="section-header">
+          <span>🔗</span> Прочее
+          <span>${tagFilter ? escapeHtml(otherActiveTag) : ""}</span>
+        </div>
+        <div class="section-content">
+          <div class="hashtags-container" style="padding:12px 16px 6px 16px;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              ${tagFilter ? `<span class="hashtag active" onclick="clearOtherTag()">Сбросить</span>` : `<span class="hashtag" onclick="clearOtherTag()">Сбросить</span>`}
+              ${tagFilter ? `<span style="color:#b0b0b0;font-size:12px;">Фильтр по тегу включён</span>` : `<span style="color:#b0b0b0;font-size:12px;">Кликни тег или введи #тег в поиск</span>`}
+            </div>
+          </div>
+          <div class="other-list">
+      `;
+
+      if (!items.length) {
+        html += `<div style="padding:18px 16px;color:#b0b0b0;">Ничего не найдено</div>`;
+      } else {
+        items.forEach(item => {
+          const url = item.url || "";
+          const title = item.title || "";
+          const text = item.text || "";
+          const date = item.date || "";
+          const tags = splitTags(item.hashtags || item.tags || "");
+
+          html += `<div class="other-item">
+              <div class="other-icon">🔗</div>
+              <div class="other-body">
+                <div class="other-title">
+                  <a href="${escapeAttr(url)}" target="_blank" title="${escapeAttr(url)}">${escapeHtml(title)}</a>
+                  <span class="other-date">${escapeHtml(date)}</span>
+                </div>
+                ${text ? `<div class="other-text">${escapeHtml(text)}</div>` : ``}
+                ${tags.length ? `<div class="other-tags">${tags.map(t => `<span class="hashtag ${tagFilter && t.toLowerCase()===tagFilter ? "active":""}" onclick="setOtherTag('${escapeJs(t)}')">${escapeHtml(t)}</span>`).join("")}</div>` : ``}
+              </div>
+            </div>`;
+        });
+      }
+
+      html += `</div></div></div>`;
+      container.innerHTML = html;
+    }
+
+    // ======== NAV ========
+    function switchPage(pageName, el) {
+      document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
+      if (el) el.classList.add("active");
+
+      // title
+      const titles = {
+        home: "КПСС",
+        schedule: "Расписание",
+        hashtags: "Хэштеги",
+        other: "Прочее",
+        gallery: "Галерея",
+        important: "Важное"
+      };
+      document.getElementById("mainTitle").textContent = titles[pageName] || "КПСС";
+
+      // pages
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      const page = document.getElementById(`page-${pageName}`);
+      if (page) page.classList.add("active");
+
+      // search only in "other"
+      const sb = document.getElementById("otherSearchBox");
+      if (sb) sb.style.display = (pageName === "other") ? "block" : "none";
+
+      // update render if needed
+      if (pageName === "other") renderOtherPage();
+    }
+
+    function openOtherWithTag(tag) {
+      setOtherTag(tag);
+
+      // включаем страницу "Прочее"
+      const otherMenuItem = Array.from(document.querySelectorAll(".menu-item"))
+        .find(x => (x.textContent || "").toLowerCase().includes("прочее"));
+      switchPage("other", otherMenuItem || null);
+
+      // скроллим вверх
+      document.getElementById("mainContent")?.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function setOtherTag(tag) {
+      otherActiveTag = normalizeTag(tag);
+      const inp = document.getElementById("otherSearchInput");
+      if (inp) inp.value = ""; // чтобы не мешало
+      renderOtherPage();
+    }
+
+    function clearOtherTag() {
+      otherActiveTag = "";
+      renderOtherPage();
+    }
+
+    function splitTags(s) {
+      const raw = String(s || "").trim();
+      if (!raw) return [];
+      // поддержка: "#a #b", "#a, #b", "a, b", "a b"
+      const parts = raw
+        .replace(/,/g, " ")
+        .split(/\s+/)
+        .map(x => x.trim())
+        .filter(Boolean)
+        .map(normalizeTag);
+
+      // уникальные
+      const seen = new Set();
+      const out = [];
+      for (const t of parts) {
+        const key = t.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(t);
+      }
+      return out;
+    }
+
+    function normalizeTag(t) {
+      const s = String(t || "").trim();
+      if (!s) return "";
+      return s.startsWith("#") ? s : ("#" + s);
+    }
+
+    // ======== UI HELPERS ========
     function toggleSection(header) {
       const content = header.nextElementSibling;
       const arrow = header.querySelector("span:last-child");
@@ -695,49 +766,6 @@
       }
     }
 
-    function openChat(chatId) {
-      const chat = (appData.chats || []).find(c => String(c.id) === String(chatId));
-      if (!chat) return;
-
-      document.getElementById("modalChatTitle").textContent = chat.name || "Чат";
-      document.getElementById("modalChatContent").innerHTML = `
-        <div style="background:#404040;padding:16px;border-radius:12px;">
-          <div style="color:#ff99cc;margin-bottom:8px;">${escapeHtml(chat.last_sender || "")}</div>
-          <div style="margin-bottom:12px;">${escapeHtml(chat.last_message || "")}</div>
-          <div style="color:#808080;">${escapeHtml(chat.time || "")}</div>
-        </div>
-      `;
-      document.getElementById("chatModal").classList.add("active");
-    }
-
-    function hideChat(chatId, event) {
-      event.stopPropagation();
-
-      // прячем карточку на главной
-      const el1 = document.getElementById(chatId);
-      if (el1) el1.classList.add("hidden");
-
-      // прячем карточку в списке
-      const el2 = document.getElementById(chatId + "-list");
-      if (el2) el2.classList.add("hidden");
-
-      if (!hiddenChats.includes(chatId)) {
-        hiddenChats.push(chatId);
-        localStorage.setItem("hiddenChats", JSON.stringify(hiddenChats));
-      }
-      updateCounters();
-    }
-
-    function updateCounters() {
-      const total = (appData.chats || []).length;
-      const visible = Math.max(0, total - hiddenChats.length);
-      const badge = document.getElementById("chatsBadge");
-      if (badge) {
-        badge.textContent = visible;
-        badge.style.display = visible > 0 ? "inline" : "none";
-      }
-    }
-
     function openImageModal(imageUrl) {
       if (!imageUrl) return;
       document.getElementById("modalImage").src = imageUrl;
@@ -748,45 +776,15 @@
       document.getElementById("imageModal").classList.remove("active");
     }
 
-    function searchByHashtag(tag) {
-      document.getElementById("infoModalTitle").textContent = "Хэштег";
-      document.getElementById("infoModalContent").innerHTML =
-        `<div style="text-align:center;padding:20px;"><span class="hashtag">${escapeHtml(tag)}</span></div>`;
-      document.getElementById("infoModal").classList.add("active");
-    }
-
-    function toggleSearch() {
-      const box = document.getElementById("searchBox");
-      box.style.display = box.style.display === "none" ? "block" : "none";
-      if (box.style.display === "block") document.getElementById("searchInput").focus();
-    }
-
-    function searchChats() {
-      const text = (document.getElementById("searchInput").value || "").toLowerCase();
-      document.querySelectorAll(".chat-item").forEach(chat => {
-        const title = (chat.querySelector(".title")?.textContent || "").toLowerCase();
-        chat.style.display = title.includes(text) ? "flex" : "none";
-      });
-    }
-
     function showMenu() {
       document.getElementById("infoModalTitle").textContent = "Меню";
       document.getElementById("infoModalContent").innerHTML = `
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <div onclick="showAllChats()" style="padding:12px;background:#404040;border-radius:12px;cursor:pointer;">Показать все чаты</div>
           <div onclick="refreshData()" style="padding:12px;background:#404040;border-radius:12px;cursor:pointer;">Обновить</div>
           <div onclick="location.reload()" style="padding:12px;background:#404040;border-radius:12px;cursor:pointer;">Перезагрузить</div>
         </div>
       `;
       document.getElementById("infoModal").classList.add("active");
-    }
-
-    function showAllChats() {
-      hiddenChats = [];
-      localStorage.removeItem("hiddenChats");
-      document.querySelectorAll(".chat-item").forEach(c => c.classList.remove("hidden"));
-      updateCounters();
-      closeModal("infoModal");
     }
 
     function refreshData() {
@@ -805,34 +803,6 @@
         document.getElementById("sidebar").classList.add("closed");
         document.getElementById("mainContent").classList.add("expanded");
       }
-    }
-
-    function switchMainTab(tabName) {
-      document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
-      event.currentTarget.classList.add("active");
-
-      const titles = { home: "КПСС", chats: "Чаты", schedule: "Расписание", hashtags: "Хэштеги", gallery: "Галерея", important: "Важное" };
-      document.getElementById("mainTitle").textContent = titles[tabName] || "КПСС";
-
-      if (tabName === "home") switchTab("all", document.querySelector(".tab"));
-      else switchTab(tabName, null);
-    }
-
-    function switchTab(tabName, element) {
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-
-      if (element) element.classList.add("active");
-      else {
-        document.querySelectorAll(".tab").forEach(t => {
-          if (t.textContent.toLowerCase().includes(tabName)) t.classList.add("active");
-        });
-      }
-
-      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-
-      const validTabs = ["all", "chats", "important", "schedule", "gallery", "hashtags"];
-      if (validTabs.includes(tabName)) document.getElementById(`tab-${tabName}`).classList.add("active");
-      else document.getElementById("tab-all").classList.add("active");
     }
 
     function showLoading(show) {
@@ -858,7 +828,7 @@
       document.getElementById(modalId).classList.remove("active");
     }
 
-    // ======== XSS SAFE HELPERS ========
+    // ======== SAFE ========
     function escapeHtml(s) {
       return String(s ?? "")
         .replace(/&/g, "&amp;")
