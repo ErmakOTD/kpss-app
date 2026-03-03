@@ -1,14 +1,16 @@
 /* ===================== CONFIG ===================== */
 
 // Основная таблица (чтение)
+// КПСС (чтение)
 const PUBLISHED_HTML_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6/pubhtml";
 const SPREADSHEET_ID = "2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6";
 
-// Users/Chat API (обязательно /exec)
-const USERS_CHAT_API_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ13vq3-vw9K1dtgZ8x-xW8CUZElJkXoEqDaX9IazumBLHrWnlVhOR9Q7HA5OdIr5lvyM7TlGymdwNT/pubhtml";
+// КПСС (запись из админки) — /exec КПСС
+const MAIN_DATA_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwalEkAJu_6U34WK1gbwuC4q0y41Ez2zedWYoZntUmlxGmkSFTEmyqjfVt9wdIHeTQrA/exec";
 
-// Admin запись (если нужна)
-const MAIN_DATA_APPS_SCRIPT_URL = "PASTE_MAIN_DATA_WEBAPP_EXEC_URL_HERE";
+// ЧАТЫ (API) — ВАЖНО: /exec чатов
+const USERS_CHAT_API_URL = "https://script.google.com/macros/s/AKfycbzf1ZuRThrAoyGu7CK8QFY190_n2jGXBTOIaWNcNLwVVraiXhsvMuQuP_tk6VsTpgwv/exec";
+
 const ADMIN_PASSWORD = "kpssadmin";
 
 /* ===================== STATE ===================== */
