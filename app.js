@@ -421,9 +421,14 @@ function renderOtherPage() {
     const url = (item.url || "").toLowerCase();
     const tags = splitTags(item.hashtags || item.tags || "").map(t => t.toLowerCase());
 
-    if (tagFilter && !tags.includes(tagFilter)) return false;
+    if (tagFilter) {
+      if (!tags.includes(tagFilter)) return false;
+    }
+
     if (!q) return true;
+
     if (q.startsWith("#")) return tags.some(t => t.includes(q));
+
     return title.includes(q) || text.includes(q) || url.includes(q) || tags.some(t => t.includes(q));
   });
 
@@ -432,21 +437,40 @@ function renderOtherPage() {
       <span>🔗</span> Прочее
       <span>${tagFilter ? esc(otherActiveTag) : ""}</span>
     </div>
+
     <div class="section-content">
+      <div class="hashtags-container" style="padding:12px 16px 6px 16px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <span class="hashtag ${tagFilter ? "active" : ""}" id="otherResetTag">Сбросить</span>
+          ${tagFilter
+            ? `<span style="color:#b0b0b0;font-size:12px;">Фильтр по тегу включён</span>`
+            : `<span style="color:#b0b0b0;font-size:12px;">Кликни тег или введи #тег в поиск</span>`}
+        </div>
+      </div>
+
       <div class="other-list">`;
 
   if (!items.length) {
     html += `<div style="padding:18px 16px;color:#b0b0b0;">Ничего не найдено</div>`;
   } else {
     items.forEach(item => {
-      html += `<div class="other-item" onclick="window.open('${escAttr(item.url || "")}','_blank')">
+      const url = item.url || "";
+      const title = item.title || "";
+      const text = item.text || "";
+      const date = item.date || "";
+      const tags = splitTags(item.hashtags || item.tags || "");
+
+      html += `<div class="other-item" style="cursor:default;">
         <div class="other-icon">🔗</div>
         <div class="other-body">
           <div class="other-title">
-            <div class="t">${esc(item.title || "")}</div>
-            <div class="other-date">${esc(item.date || "")}</div>
+            <div class="t" title="${escAttr(url)}" style="cursor:pointer;" data-open-url="${escAttr(url)}">${esc(title)}</div>
+            <div class="other-date">${esc(date)}</div>
           </div>
-          ${item.text ? `<div class="other-text">${esc(item.text)}</div>` : ``}
+          ${text ? `<div class="other-text">${esc(text)}</div>` : ``}
+          ${tags.length ? `<div class="other-tags">
+            ${tags.map(t => `<span class="hashtag ${(tagFilter && t.toLowerCase()===tagFilter) ? "active" : ""}" data-tag="${escAttr(t)}">${esc(t)}</span>`).join("")}
+          </div>` : ``}
         </div>
       </div>`;
     });
@@ -454,6 +478,23 @@ function renderOtherPage() {
 
   html += `</div></div></div>`;
   container.innerHTML = html;
+
+  // handlers
+  const reset = $("#otherResetTag");
+  if (reset) reset.onclick = () => { otherActiveTag = ""; renderOtherPage(); };
+
+  container.querySelectorAll("[data-tag]").forEach(el => {
+    el.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      otherActiveTag = normalizeTag(el.getAttribute("data-tag"));
+      $("#otherSearchInput").value = "";
+      renderOtherPage();
+    });
+  });
+
+  container.querySelectorAll("[data-open-url]").forEach(el => {
+    el.addEventListener("click", () => window.open(el.getAttribute("data-open-url"), "_blank"));
+  });
 }
 
 function bindSectionToggles(container) {
