@@ -1143,16 +1143,32 @@ function jsonp(url) {
     const cb = "cb_" + Math.random().toString(36).slice(2);
     const s = document.createElement("script");
 
+    let done = false;
+    const timeout = setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      reject(new Error("JSONP timeout (скрипт не загрузился). Проверь /exec, доступ Anyone, и что ссылка открывается в браузере."));
+    }, 12000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      if (window[cb]) delete window[cb];
+      if (s && s.parentNode) s.parentNode.removeChild(s);
+    }
+
     window[cb] = (data) => {
-      delete window[cb];
-      s.remove();
+      if (done) return;
+      done = true;
+      cleanup();
       resolve(data);
     };
 
     s.onerror = () => {
-      delete window[cb];
-      s.remove();
-      reject(new Error("JSONP load error"));
+      if (done) return;
+      done = true;
+      cleanup();
+      reject(new Error("JSONP load error (Google не отдал JS). Часто причина: WebApp не Anyone или URL не /exec."));
     };
 
     const sep = url.includes("?") ? "&" : "?";
