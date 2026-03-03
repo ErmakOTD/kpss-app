@@ -165,7 +165,22 @@ body{background:#2d2d2d;color:#f0f0f0;overflow-x:hidden}
 .emoji-panel.show{display:flex;flex-wrap:wrap;gap:8px}
 .emoji{padding:8px 10px;border-radius:12px;background:#404040;border:1px solid #505050;cursor:pointer}
 .emoji:hover{border-color:#ff99cc}
-
+/* ADMIN */
+.admin-wrap{padding:12px 16px}
+.admin-grid{display:flex;flex-direction:column;gap:14px}
+.admin-card{background:#363636;border:1px solid #404040;border-radius:16px;padding:16px}
+.admin-card h3{color:#ff99cc;font-size:15px;margin-bottom:10px}
+.admin-row{display:flex;flex-direction:column;gap:10px}
+.admin-row input,.admin-row textarea,.admin-row select{
+  width:100%;padding:12px 14px;border-radius:14px;background:#404040;border:1px solid #505050;color:#f0f0f0;font-size:14px
+}
+.admin-row textarea{min-height:120px;resize:vertical}
+.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.admin-btn{background:#ff99cc;color:#2d2d2d;border:none;padding:12px 14px;border-radius:14px;cursor:pointer;font-weight:800}
+.admin-btn.secondary{background:#404040;color:#ff99cc;border:1px solid #505050}
+.admin-btn.danger{background:#ff5c93;color:#2d2d2d}
+.admin-hint{color:#b0b0b0;font-size:12px;line-height:1.4}
+.admin-result{margin-top:10px;color:#ff99cc;font-size:13px;display:none}
 @media (max-width:768px){
   .main-content{margin-right:0;width:100%}
 }
