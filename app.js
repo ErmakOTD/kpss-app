@@ -1031,9 +1031,173 @@ function renderAdminPage() {
     container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет доступа</div>`;
     return;
   }
-  container.innerHTML = `<div class="section" style="padding:20px;color:#b0b0b0;">
-    Админка в этом варианте не развёрнута (твоя старая логика остаётся). Если нужно — скажи, какие формы оставляем, и я перенесу полностью сюда.
-  </div>`;
+
+  container.innerHTML = `
+    <div class="admin-wrap">
+      <div class="admin-grid">
+
+        <div class="admin-card">
+          <h3>📌 Важное</h3>
+          <div class="admin-row">
+            <input id="adm_imp_sender" placeholder="От кого (sender)">
+            <textarea id="adm_imp_text" placeholder="Текст"></textarea>
+            <input id="adm_imp_link" placeholder="Ссылка (необязательно)">
+            <input id="adm_imp_time" placeholder="Время (например 12:30)">
+            <input id="adm_imp_date" placeholder="Дата (например 03.03)">
+          </div>
+          <div class="admin-actions">
+            <button class="admin-btn" id="adm_imp_add">Добавить</button>
+            <button class="admin-btn danger" id="adm_imp_clear">Очистить лист IMPORTANT</button>
+          </div>
+          <div class="admin-result" id="adm_imp_res"></div>
+        </div>
+
+        <div class="admin-card">
+          <h3>📅 Расписание — вставка сразу блоком</h3>
+          <div class="admin-hint">
+            Формат строк: <b>Время<TAB>Событие<TAB>Комментарий</b> (Комментарий можно пустой).<br>
+            Пример (можно копировать):<br>
+            08:00 – 09:30\t1-я пара\t<br>
+            09:40 – 11:10\t2-я пара\t<br>
+            11:10 – 11:35\tперерыв (25 минут).\t<br>
+            11:35 – 13:05\t3-я пара\tПервая пара после обеда.<br>
+          </div>
+
+          <div class="admin-row">
+            <input id="adm_sch_day" placeholder="День (например Понедельник)">
+            <textarea id="adm_sch_bulk" placeholder="Вставь расписание блоком (каждая строка = событие)"></textarea>
+          </div>
+
+          <div class="admin-actions">
+            <button class="admin-btn" id="adm_sch_append">Добавить (добавит к старому)</button>
+            <button class="admin-btn danger" id="adm_sch_replace">Удалить прошлое и заменить</button>
+            <button class="admin-btn secondary" id="adm_sch_template">Вставить шаблон</button>
+          </div>
+          <div class="admin-result" id="adm_sch_res"></div>
+        </div>
+
+        <div class="admin-card">
+          <h3>🖼️ Галерея</h3>
+          <div class="admin-row">
+            <input id="adm_gal_title" placeholder="Название">
+            <input id="adm_gal_img" placeholder="Ссылка на картинку (image_url)">
+            <input id="adm_gal_date" placeholder="Дата (необязательно)">
+          </div>
+          <div class="admin-actions">
+            <button class="admin-btn" id="adm_gal_add">Добавить</button>
+            <button class="admin-btn danger" id="adm_gal_clear">Очистить лист GALLERY</button>
+          </div>
+          <div class="admin-result" id="adm_gal_res"></div>
+        </div>
+
+        <div class="admin-card">
+          <h3>🔗 Прочее</h3>
+          <div class="admin-row">
+            <input id="adm_oth_title" placeholder="Заголовок">
+            <input id="adm_oth_url" placeholder="URL">
+            <textarea id="adm_oth_text" placeholder="Описание (text)"></textarea>
+            <input id="adm_oth_tags" placeholder="#теги через пробел или запятую">
+            <input id="adm_oth_date" placeholder="Дата (необязательно)">
+          </div>
+          <div class="admin-actions">
+            <button class="admin-btn" id="adm_oth_add">Добавить</button>
+            <button class="admin-btn danger" id="adm_oth_clear">Очистить лист OTHER</button>
+          </div>
+          <div class="admin-result" id="adm_oth_res"></div>
+        </div>
+
+        <div class="admin-card">
+          <h3>🧹 Удаление по ID</h3>
+          <div class="admin-hint">Работает если в листе есть колонка <b>id</b> (в новом Code.gs она будет).</div>
+          <div class="admin-row">
+            <select id="adm_del_type">
+              <option value="important">important</option>
+              <option value="schedule">schedule</option>
+              <option value="gallery">gallery</option>
+              <option value="other">other</option>
+              <option value="hashtags">hashtags</option>
+            </select>
+            <input id="adm_del_id" placeholder="ID строки">
+          </div>
+          <div class="admin-actions">
+            <button class="admin-btn danger" id="adm_del_btn">Удалить по ID</button>
+          </div>
+          <div class="admin-result" id="adm_del_res"></div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  // bind buttons
+  $("#adm_imp_add").onclick = async () => {
+    await adminAppend("important", {
+      sender: val("adm_imp_sender"),
+      text: val("adm_imp_text"),
+      link: val("adm_imp_link"),
+      time: val("adm_imp_time"),
+      date: val("adm_imp_date"),
+    }, "adm_imp_res");
+  };
+
+  $("#adm_imp_clear").onclick = async () => {
+    await adminClear("important", "adm_imp_res");
+  };
+
+  $("#adm_sch_template").onclick = () => {
+    $("#adm_sch_bulk").value =
+`08:00 – 09:30\t1-я пара\t
+09:40 – 11:10\t2-я пара\t
+11:10 – 11:35\tперерыв (25 минут).\t
+11:35 – 13:05\t3-я пара\tПервая пара после обеда.
+13:15 – 14:45\t4-я пара\t
+14:45 – 16:50\tПерерыв\t
+16:50 – 18:20\t5-я пара\tФинал`;
+  };
+
+  $("#adm_sch_append").onclick = async () => {
+    const day = val("adm_sch_day");
+    const rows = parseScheduleBulk(day, val("adm_sch_bulk"));
+    await adminBulkAppend("schedule", rows, "adm_sch_res");
+  };
+
+  $("#adm_sch_replace").onclick = async () => {
+    const day = val("adm_sch_day");
+    const rows = parseScheduleBulk(day, val("adm_sch_bulk"));
+    await adminReplace("schedule", rows, "adm_sch_res");
+  };
+
+  $("#adm_gal_add").onclick = async () => {
+    await adminAppend("gallery", {
+      title: val("adm_gal_title"),
+      image_url: val("adm_gal_img"),
+      date: val("adm_gal_date"),
+    }, "adm_gal_res");
+  };
+
+  $("#adm_gal_clear").onclick = async () => {
+    await adminClear("gallery", "adm_gal_res");
+  };
+
+  $("#adm_oth_add").onclick = async () => {
+    await adminAppend("other", {
+      title: val("adm_oth_title"),
+      url: val("adm_oth_url"),
+      text: val("adm_oth_text"),
+      hashtags: val("adm_oth_tags"),
+      date: val("adm_oth_date"),
+    }, "adm_oth_res");
+  };
+
+  $("#adm_oth_clear").onclick = async () => {
+    await adminClear("other", "adm_oth_res");
+  };
+
+  $("#adm_del_btn").onclick = async () => {
+    const type = $("#adm_del_type").value;
+    const id = val("adm_del_id");
+    await adminDeleteById(type, id, "adm_del_res");
+  };
 }
 
 /* ===================== COMMON HELPERS ===================== */
@@ -1178,7 +1342,131 @@ async function fetchWithTimeout(url, timeout=10000) {
     return res.ok ? await res.text() : null;
   } catch { clearTimeout(id); return null; }
 }
+function val(id) {
+  const el = document.getElementById(id);
+  return (el?.value || "").trim();
+}
 
+function showAdminRes(id, text, ok=true) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = "block";
+  el.style.color = ok ? "#ff99cc" : "#ff5c93";
+  el.textContent = text;
+}
+
+function ensureAdminApi() {
+  if (!MAIN_DATA_APPS_SCRIPT_URL || MAIN_DATA_APPS_SCRIPT_URL.includes("PASTE_"))
+    throw new Error("MAIN_DATA_APPS_SCRIPT_URL не вставлен (/exec КПСС)");
+  if (!MAIN_DATA_APPS_SCRIPT_URL.includes("/exec"))
+    throw new Error("MAIN_DATA_APPS_SCRIPT_URL должен быть .../exec");
+}
+
+async function adminPost(payload) {
+  ensureAdminApi();
+  // Важно: Apps Script принимает JSON. Мы не читаем ответ (no-cors), но операция выполнится.
+  await fetch(MAIN_DATA_APPS_SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+
+async function adminAppend(type, data, resId) {
+  try {
+    await adminPost({ action: "append", type, data });
+    showAdminRes(resId, `✅ Добавлено в ${type}`);
+    refreshData();
+  } catch (e) {
+    showAdminRes(resId, `❌ ${e.message || e}`, false);
+  }
+}
+
+async function adminBulkAppend(type, rows, resId) {
+  try {
+    if (!rows.length) throw new Error("Нет строк для добавления");
+    await adminPost({ action: "bulk_append", type, rows });
+    showAdminRes(resId, `✅ Добавлено: ${rows.length} строк в ${type}`);
+    refreshData();
+  } catch (e) {
+    showAdminRes(resId, `❌ ${e.message || e}`, false);
+  }
+}
+
+async function adminReplace(type, rows, resId) {
+  try {
+    if (!rows.length) throw new Error("Нет строк для замены");
+    await adminPost({ action: "replace", type, rows });
+    showAdminRes(resId, `✅ Лист ${type} очищен и заменён (${rows.length} строк)`);
+    refreshData();
+  } catch (e) {
+    showAdminRes(resId, `❌ ${e.message || e}`, false);
+  }
+}
+
+async function adminClear(type, resId) {
+  try {
+    await adminPost({ action: "clear", type });
+    showAdminRes(resId, `✅ Лист ${type} очищен`);
+    refreshData();
+  } catch (e) {
+    showAdminRes(resId, `❌ ${e.message || e}`, false);
+  }
+}
+
+async function adminDeleteById(type, id, resId) {
+  try {
+    if (!id) throw new Error("Введи ID");
+    await adminPost({ action: "delete_by_id", type, id });
+    showAdminRes(resId, `✅ Запрос на удаление отправлен (type=${type})`);
+    refreshData();
+  } catch (e) {
+    showAdminRes(resId, `❌ ${e.message || e}`, false);
+  }
+}
+
+/**
+ * bulk-парсер расписания:
+ * каждая строка: time \t subject \t comment
+ * comment можно пустой
+ * day берём из поля "День"
+ */
+function parseScheduleBulk(day, text) {
+  day = String(day || "").trim();
+  if (!day) throw new Error("Укажи день (например Понедельник)");
+
+  const lines = String(text || "")
+    .split("\n")
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  const rows = [];
+  for (const line of lines) {
+    // поддержка: табы или несколько пробелов
+    const parts = line.includes("\t")
+      ? line.split("\t")
+      : line.split(/\s{2,}/); // 2+ пробела
+
+    const time = (parts[0] || "").trim();
+    const subject = (parts[1] || "").trim();
+    const comment = (parts.slice(2).join(" ") || "").trim();
+
+    if (!time || !subject) continue;
+
+    rows.push({
+      day,
+      time,
+      subject,
+      comment,
+      room: "",      // можно дополнять потом
+      teacher: ""    // можно дополнять потом
+    });
+  }
+
+  if (!rows.length) throw new Error("Не удалось распознать строки расписания");
+  return rows;
+}
 /* ===================== JSONP (CORS SAFE GET) ===================== */
 
 function jsonp(url) {
