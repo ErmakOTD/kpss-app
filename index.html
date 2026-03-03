@@ -4,9 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=yes" />
   <title>КПСС — группа</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+
   <div class="loading" id="loading">
     <div>Загрузка данных</div>
     <div class="spinner"></div>
@@ -14,105 +15,130 @@
 
   <div class="error" id="error" style="display:none;">
     <h3>⚠️ Ошибка загрузки</h3>
-    <div style="color:#b0b0b0;font-size:14px;margin:12px 0;" id="errorMessage"></div>
+    <div class="error-msg" id="errorMessage"></div>
     <button class="retry-btn" onclick="location.reload()">Повторить</button>
   </div>
 
   <div class="app-container" id="app" style="display:none;">
-    <div class="sidebar" id="sidebar">
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar closed" id="sidebar">
       <div class="sidebar-header">
-        <h2 id="kpssTitle" style="cursor:pointer;">КПСС</h2>
+        <h2 id="kpssTitle">КПСС</h2>
         <span id="membersCount">данные из таблицы</span>
       </div>
-      <div class="sidebar-menu">
-        <div class="menu-item active" onclick="switchPage('home', this); closeSidebarOnMobile()">
+
+      <nav class="sidebar-menu">
+        <div class="menu-item active" data-page="home">
           <span class="icon">🏠</span><span class="title">Главная</span>
         </div>
-        <div class="menu-item" onclick="switchPage('schedule', this); closeSidebarOnMobile()">
+        <div class="menu-item" data-page="schedule">
           <span class="icon">📅</span><span class="title">Расписание</span>
         </div>
-        <div class="menu-item" onclick="switchPage('hashtags', this); closeSidebarOnMobile()">
+        <div class="menu-item" data-page="hashtags">
           <span class="icon">✨</span><span class="title">Хэштеги</span>
         </div>
-        <div class="menu-item" onclick="switchPage('other', this); closeSidebarOnMobile()">
+        <div class="menu-item" data-page="other">
           <span class="icon">🔗</span><span class="title">Прочее</span>
         </div>
-        <div class="menu-item" onclick="switchPage('gallery', this); closeSidebarOnMobile()">
+        <div class="menu-item" data-page="gallery">
           <span class="icon">🖼️</span><span class="title">Галерея</span>
         </div>
-        <div class="menu-item" onclick="switchPage('important', this); closeSidebarOnMobile()">
+        <div class="menu-item" data-page="important">
           <span class="icon">📌</span><span class="title">Важное</span>
         </div>
 
-        <!-- Админка: появляется только после входа -->
-        <div class="menu-item" id="adminMenuItem" style="display:none;"
-             onclick="switchPage('admin', this); closeSidebarOnMobile()">
+        <!-- Visible only after login -->
+        <div class="menu-item" id="chatsMenuItem" data-page="chats" style="display:none;">
+          <span class="icon">💬</span><span class="title">Чаты</span>
+          <span class="badge" id="globalUnreadBadge" style="display:none;">0</span>
+        </div>
+        <div class="menu-item" id="contactsMenuItem" data-page="contacts" style="display:none;">
+          <span class="icon">📇</span><span class="title">Контакты</span>
+        </div>
+
+        <!-- Visible only after admin login -->
+        <div class="menu-item" id="adminMenuItem" data-page="admin" style="display:none;">
           <span class="icon">⚙️</span><span class="title">Админ</span>
         </div>
-      </div>
-    </div>
+      </nav>
+    </aside>
 
-    <div class="main-content" id="mainContent">
-      <div class="content-header">
-        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <!-- MAIN -->
+    <main class="main-content expanded" id="mainContent">
+      <header class="content-header">
+        <!-- button like your screenshot -->
+        <button class="menu-toggle-square" id="menuSquareBtn" title="Меню">
+          ☰
+        </button>
+
         <h1 id="mainTitle">КПСС</h1>
         <span id="headerMembers">данные из таблицы</span>
 
         <div class="header-actions">
-          <div class="circle-btn" onclick="openDrawer()">●</div>
+          <div class="circle-btn" id="circleMenuBtn" title="Меню">●</div>
         </div>
-      </div>
+      </header>
 
-      <!-- Поиск (используется только для "Прочее") -->
+      <!-- Search only for Other -->
       <div class="search-box" id="otherSearchBox" style="display:none;">
-        <input type="text" placeholder="Поиск по ссылкам или #хэштегам..." id="otherSearchInput" onkeyup="renderOtherPage()">
+        <input type="text" placeholder="Поиск по ссылкам или #хэштегам..." id="otherSearchInput">
       </div>
 
       <!-- Pages -->
-      <div class="page active" id="page-home"></div>
-      <div class="page" id="page-schedule"></div>
-      <div class="page" id="page-hashtags"></div>
-      <div class="page" id="page-other"></div>
-      <div class="page" id="page-gallery"></div>
-      <div class="page" id="page-important"></div>
-      <div class="page" id="page-admin"></div>
-    </div>
+      <section class="page active" id="page-home"></section>
+      <section class="page" id="page-schedule"></section>
+      <section class="page" id="page-hashtags"></section>
+      <section class="page" id="page-other"></section>
+      <section class="page" id="page-gallery"></section>
+      <section class="page" id="page-important"></section>
+
+      <section class="page" id="page-chats"></section>
+      <section class="page" id="page-contacts"></section>
+      <section class="page" id="page-chat"></section>
+
+      <section class="page" id="page-admin"></section>
+    </main>
   </div>
 
-  <!-- modal (используем и для пароля) -->
+  <!-- COMMON MODAL -->
   <div class="modal" id="infoModal">
     <div class="modal-content">
       <div class="modal-header">
         <span id="infoModalTitle">Меню</span>
-        <span class="modal-close" onclick="closeModal('infoModal')">✕</span>
+        <span class="modal-close" id="modalCloseBtn">✕</span>
       </div>
       <div class="modal-body" id="infoModalContent"></div>
     </div>
   </div>
 
-  <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+  <!-- IMAGE MODAL -->
+  <div class="image-modal" id="imageModal">
     <div class="image-modal-content">
-      <span class="image-modal-close" onclick="closeImageModal()">✕</span>
+      <span class="image-modal-close" id="imageModalCloseBtn">✕</span>
       <img id="modalImage" src="" alt="">
     </div>
   </div>
 
+  <!-- UPDATE INDICATOR -->
   <div class="update-indicator" id="updateIndicator">Обновлено</div>
 
-  <!-- Правая боковая панель меню -->
-  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+  <!-- RIGHT DRAWER -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
   <div class="right-drawer" id="rightDrawer">
     <div class="drawer-header">
       <div>Меню</div>
-      <div class="drawer-close" onclick="closeDrawer()">✕</div>
+      <div class="drawer-close" id="drawerCloseBtn">✕</div>
     </div>
     <div class="drawer-body">
-      <div class="drawer-item" onclick="refreshData(); closeDrawer();">🔄 Обновить данные</div>
-      <div class="drawer-item" onclick="location.reload();">♻️ Перезагрузить</div>
-      <div class="drawer-item" onclick="showAbout();">ℹ️ О проекте</div>
+      <div class="drawer-item" id="drawerRefreshBtn">🔄 Обновить данные</div>
+      <div class="drawer-item" id="drawerAuthBtn">👤 Вход / Регистрация</div>
+      <div class="drawer-item" id="drawerLogoutBtn" style="display:none;">🚪 Выйти</div>
+      <div class="drawer-item" id="drawerReloadBtn">♻️ Перезагрузить</div>
+      <div class="drawer-item" id="drawerAboutBtn">ℹ️ О проекте</div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
