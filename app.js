@@ -1415,23 +1415,6 @@ async function adminClear(type, resId) {
   }
 }
 
-async function adminDeleteById(type, id, resId) {
-  try {
-    if (!id) throw new Error("Введи ID");
-    await adminPost({ action: "delete_by_id", type, id });
-    showAdminRes(resId, `✅ Запрос на удаление отправлен (type=${type})`);
-    refreshData();
-  } catch (e) {
-    showAdminRes(resId, `❌ ${e.message || e}`, false);
-  }
-}
-
-/**
- * bulk-парсер расписания:
- * каждая строка: time \t subject \t comment
- * comment можно пустой
- * day берём из поля "День"
- */
 function parseScheduleBulk(day, text) {
   day = String(day || "").trim();
   if (!day) throw new Error("Укажи день (например Понедельник)");
@@ -1442,29 +1425,89 @@ function parseScheduleBulk(day, text) {
     .filter(Boolean);
 
   const rows = [];
-  for (const line of lines) {
-    // поддержка: табы или несколько пробелов
-    const parts = line.includes("\t")
-      ? line.split("\t")
-      : line.split(/\s{2,}/); // 2+ пробела
 
-    const time = (parts[0] || "").trim();
-    const subject = (parts[1] || "").trim();
-    const comment = (parts.slice(2).join(" ") || "").trim();
+  for (const line of lines) {
+    // 1) нормализуем тире: разные варианты -> "—"
+    const norm = line
+      .replace(/\s*-\s*/g, " — ")
+      .replace(/\s*–\s*/g, " — ")
+      .replace(/\s*—\s*/g, " — ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // варианты форматов:
+    // A) time \t subject \t comment
+    // B) time  subject  comment  (2+ пробелов)
+    // C) "13:15 – 14:45 — История — Препод"
+    // D) "13:15-14:45 История Препод" (без разделителей) — частично
+
+    let time = "";
+    let subject = "";
+    let comment = "";
+    let room = "";
+    let teacher = "";
+
+    // A) TAB
+    if (line.includes("\t")) {
+      const parts = line.split("\t").map(x => x.trim());
+      time = parts[0] || "";
+      subject = parts[1] || "";
+      comment = parts.slice(2).join(" ").trim();
+    }
+    // C) через " — "
+    else if (norm.includes(" — ")) {
+      const parts = norm.split(" — ").map(x => x.trim()).filter(Boolean);
+
+      // parts[0] обычно "13:15 — 14:45" или "13:15 – 14:45" (мы нормализовали)
+      // но после нормализации оно может стать "13:15 — 14:45 — История..."
+      // поэтому time — это первые 2 времени, если они есть
+      // Попробуем вытащить "HH:MM ... HH:MM" из начала строки:
+      const m = norm.match(/^(\d{1,2}:\d{2}\s*—\s*\d{1,2}:\d{2})\s*—\s*(.+)$/);
+      if (m) {
+        time = m[1].trim();
+        const rest = m[2].trim();
+        const restParts = rest.split(" — ").map(x => x.trim()).filter(Boolean);
+        subject = restParts[0] || "";
+        comment = restParts.slice(1).join(" — ").trim();
+      } else {
+        // fallback: первый кусок time, второй subject, остальное comment
+        time = parts[0] || "";
+        subject = parts[1] || "";
+        comment = parts.slice(2).join(" — ").trim();
+      }
+    }
+    // B) 2+ пробела
+    else {
+      const parts = line.split(/\s{2,}/).map(x => x.trim()).filter(Boolean);
+      time = parts[0] || "";
+      subject = parts[1] || "";
+      comment = parts.slice(2).join(" ").trim();
+    }
+
+    // если учитель записан в comment как "Фамилия И.О." — оставим как comment, но можно вынести:
+    // попробуем выдернуть " — Препод" из comment, если выглядит как Фамилия И.О.
+    if (comment) {
+      const t = comment.trim();
+      // "Данильсон А.А." или "Медведев С.С."
+      if (/^[А-ЯЁ][а-яё]+(\s+[А-ЯЁ]\.[А-ЯЁ]\.)$/.test(t)) {
+        teacher = t;
+        comment = "";
+      } else {
+        // если comment вида "что-то — Препод"
+        const last = t.split(" — ").map(x => x.trim()).filter(Boolean);
+        if (last.length >= 2 && /^[А-ЯЁ][а-яё]+(\s+[А-ЯЁ]\.[А-ЯЁ]\.)$/.test(last[last.length - 1])) {
+          teacher = last[last.length - 1];
+          comment = last.slice(0, -1).join(" — ").trim();
+        }
+      }
+    }
 
     if (!time || !subject) continue;
 
-    rows.push({
-      day,
-      time,
-      subject,
-      comment,
-      room: "",      // можно дополнять потом
-      teacher: ""    // можно дополнять потом
-    });
+    rows.push({ day, time, subject, room, teacher, comment });
   }
 
-  if (!rows.length) throw new Error("Не удалось распознать строки расписания");
+  if (!rows.length) throw new Error("Не удалось распознать строки расписания. Используй TAB или формат: 13:15 – 14:45 — Предмет — Препод");
   return rows;
 }
 /* ===================== JSONP (CORS SAFE GET) ===================== */
