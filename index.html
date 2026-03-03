@@ -126,6 +126,67 @@
       .content-header h1{font-size:16px;}
       .search-box{top:53px;}
     }
+
+    /* ===== RIGHT DRAWER MENU (справа) ===== */
+    .circle-btn{
+      width:34px;height:34px;border-radius:999px;
+      display:flex;align-items:center;justify-content:center;
+      background:#404040;border:1px solid #505050;color:#ff99cc;
+      cursor:pointer; user-select:none;
+    }
+    .circle-btn:hover{background:#ff99cc;color:#2d2d2d;border-color:#ff99cc;}
+
+    .right-drawer{
+      position:fixed; top:0; right:0; height:100vh; width:320px; max-width:92vw;
+      background:#363636; border-left:1px solid #404040;
+      transform:translateX(110%); transition:transform .22s ease;
+      z-index:2500; display:flex; flex-direction:column;
+    }
+    .right-drawer.open{transform:translateX(0);}
+    .drawer-header{
+      padding:16px 16px; border-bottom:1px solid #404040;
+      display:flex; align-items:center; justify-content:space-between;
+      color:#ff99cc; font-weight:700;
+    }
+    .drawer-close{
+      cursor:pointer; color:#808080; font-size:22px; padding:6px 10px; border-radius:10px;
+    }
+    .drawer-close:hover{background:#404040;color:#ff99cc;}
+    .drawer-body{padding:12px 12px; overflow:auto;}
+    .drawer-item{
+      padding:12px 12px; border-radius:14px; cursor:pointer;
+      background:#404040; border:1px solid #505050; color:#f0f0f0;
+      margin-bottom:10px;
+    }
+    .drawer-item:hover{border-color:#ff99cc; color:#ff99cc;}
+    .drawer-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.55);
+      z-index:2400; display:none;
+    }
+    .drawer-backdrop.show{display:block;}
+
+    /* ===== ADMIN PAGE ===== */
+    .admin-wrap{padding:12px;}
+    .admin-card{
+      background:#363636; border:1px solid #404040; border-radius:16px;
+      padding:16px; margin-bottom:14px;
+    }
+    .admin-card h3{color:#ff99cc; font-size:14px; margin-bottom:12px;}
+    .admin-row{display:flex; flex-direction:column; gap:10px;}
+    .admin-row input, .admin-row textarea, .admin-row select{
+      width:100%; padding:12px 14px; border-radius:14px;
+      background:#404040; border:1px solid #505050; color:#f0f0f0;
+      font-size:14px;
+    }
+    .admin-row input:focus, .admin-row textarea:focus, .admin-row select:focus{
+      outline:none; border-color:#ff99cc; background:#454545;
+    }
+    .admin-btn{
+      background:#ff99cc; color:#2d2d2d; border:none;
+      padding:12px 16px; border-radius:14px; cursor:pointer; font-weight:700;
+    }
+    .admin-btn:hover{background:#ffb3d9;}
+    .admin-note{color:#b0b0b0; font-size:12px; margin-top:8px; line-height:1.35;}
   </style>
 </head>
 <body>
@@ -143,7 +204,7 @@
   <div class="app-container" id="app" style="display:none;">
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <h2>КПСС</h2>
+        <h2 id="kpssTitle" style="cursor:pointer;">КПСС</h2>
         <span id="membersCount">данные из таблицы</span>
       </div>
       <div class="sidebar-menu">
@@ -165,6 +226,12 @@
         <div class="menu-item" onclick="switchPage('important', this); closeSidebarOnMobile()">
           <span class="icon">📌</span><span class="title">Важное</span>
         </div>
+
+        <!-- Админка: появляется только после входа -->
+        <div class="menu-item" id="adminMenuItem" style="display:none;"
+             onclick="switchPage('admin', this); closeSidebarOnMobile()">
+          <span class="icon">⚙️</span><span class="title">Админ</span>
+        </div>
       </div>
     </div>
 
@@ -173,8 +240,9 @@
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
         <h1 id="mainTitle">КПСС</h1>
         <span id="headerMembers">данные из таблицы</span>
+
         <div class="header-actions">
-          <span onclick="showMenu()">⋮</span>
+          <div class="circle-btn" onclick="openDrawer()">●</div>
         </div>
       </div>
 
@@ -190,9 +258,11 @@
       <div class="page" id="page-other"></div>
       <div class="page" id="page-gallery"></div>
       <div class="page" id="page-important"></div>
+      <div class="page" id="page-admin"></div>
     </div>
   </div>
 
+  <!-- modal (используем и для пароля) -->
   <div class="modal" id="infoModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -212,20 +282,43 @@
 
   <div class="update-indicator" id="updateIndicator">Обновлено</div>
 
+  <!-- Правая боковая панель меню -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+  <div class="right-drawer" id="rightDrawer">
+    <div class="drawer-header">
+      <div>Меню</div>
+      <div class="drawer-close" onclick="closeDrawer()">✕</div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-item" onclick="refreshData(); closeDrawer();">🔄 Обновить данные</div>
+      <div class="drawer-item" onclick="location.reload();">♻️ Перезагрузить</div>
+      <div class="drawer-item" onclick="showAbout();">ℹ️ О проекте</div>
+    </div>
+  </div>
+
   <script>
     // ======== ПУБЛИЧНАЯ ССЫЛКА ========
     const PUBLISHED_HTML_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6/pubhtml";
     const SPREADSHEET_ID = "2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6";
 
+    // ======== ВСТАВЬ СЮДА URL ТВОЕГО APPS SCRIPT WEB APP ========
+    // Пример: https://script.google.com/macros/s/AKfycb.../exec
+    const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEBAPP_URL_HERE";
+
     // ======== ДАННЫЕ ========
-    let appData = { important: [], schedule: [], hashtags: [], gallery: [], other: [] };
+    let appData = { important: [], schedule: [], hashtags: [], gallery: [], other: [], chats: [] };
     let loadAttempts = 0;
 
     // ======== ФИЛЬТР "ПРОЧЕЕ" ========
     let otherActiveTag = ""; // #tag
 
+    // ======== ADMIN ========
+    let isAdmin = false;
+    const ADMIN_PASSWORD = "kpssadmin";
+
     // ======== START ========
     window.onload = function () {
+      initAdminTap();
       loadAllData();
       setInterval(() => { loadAttempts = 0; loadAllData(); }, 5 * 60 * 1000);
 
@@ -247,7 +340,7 @@
         const sheets = extractSheetsFromPubhtml(pubhtml);
         if (!sheets.length) throw new Error("Не найдено ни одной вкладки (gid) в pubhtml");
 
-        const temp = { important: [], schedule: [], hashtags: [], gallery: [], other: [] };
+        const temp = { important: [], schedule: [], hashtags: [], gallery: [], other: [], chats: [] };
 
         for (const sh of sheets) {
           const csvUrl = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv&gid=${encodeURIComponent(sh.gid)}&single=true`;
@@ -267,10 +360,13 @@
 
         appData = temp;
 
+        updateMembersText();
+
         if (hasData()) {
           renderAll();
           showLoading(false);
           showUpdateIndicator();
+          if (isAdmin) renderAdminPage();
         } else {
           throw new Error("Нет данных (листы пустые или не распознаны по заголовкам)");
         }
@@ -286,12 +382,23 @@
       }
     }
 
+    function updateMembersText() {
+      // Если у тебя есть лист с участниками — тут можно считать.
+      // Пока оставим заглушку:
+      const text = "данные из таблицы";
+      const m1 = document.getElementById("membersCount");
+      const m2 = document.getElementById("headerMembers");
+      if (m1) m1.textContent = text;
+      if (m2) m2.textContent = text;
+    }
+
     function hasData() {
       return (appData.important?.length || 0) > 0 ||
              (appData.schedule?.length || 0) > 0 ||
              (appData.hashtags?.length || 0) > 0 ||
              (appData.gallery?.length || 0) > 0 ||
-             (appData.other?.length || 0) > 0;
+             (appData.other?.length || 0) > 0 ||
+             (appData.chats?.length || 0) > 0;
     }
 
     // ======== ВЫТАСКИВАЕМ GID ИЗ pubhtml ========
@@ -329,20 +436,23 @@
     function detectSheetType(headers) {
       const h = headers.map(x => x.toLowerCase().trim());
 
-      // important: id,sender,text,time,date,(link optional)
+      // important: sender,text,time/date,(link optional)
       if (h.includes("sender") && h.includes("text") && (h.includes("time") || h.includes("date"))) return "important";
 
-      // schedule: id,day,time,subject,room,teacher
+      // schedule: day,time,subject,room,teacher
       if (h.includes("day") && h.includes("time") && h.includes("subject")) return "schedule";
 
-      // hashtags: id,category,tag
+      // hashtags: category,tag
       if (h.includes("category") && h.includes("tag")) return "hashtags";
 
-      // gallery: id,title,image_url,date
+      // gallery: title,image_url/date
       if (h.includes("title") && (h.includes("image_url") || h.includes("image"))) return "gallery";
 
-      // other: id,title,url,text,hashtags,date  (text/date optional)
+      // other: title,url,hashtags/tags
       if (h.includes("title") && h.includes("url") && (h.includes("hashtags") || h.includes("tags"))) return "other";
+
+      // chats: title,emoji,text
+      if (h.includes("title") && (h.includes("emoji") || h.includes("icon")) && h.includes("text")) return "chats";
 
       return null;
     }
@@ -414,6 +524,7 @@
       renderOtherPage();
       renderGalleryPage();
       renderImportantPage();
+      // chats пока не показаны отдельной вкладкой — если надо, добавлю
     }
 
     function renderHomePage() {
@@ -568,7 +679,6 @@
             <div class="category-title">${escapeHtml(category)}</div>
             <div class="hashtag-cloud">`;
         byCategory[category].forEach(tag => {
-          // клик по тегу открывает "Прочее" с фильтром
           html += `<span class="hashtag" onclick="openOtherWithTag('${escapeJs(tag)}')">${escapeHtml(tag)}</span>`;
         });
         html += `</div></div>`;
@@ -611,15 +721,12 @@
         const url = (item.url || "").toLowerCase();
         const tags = splitTags(item.hashtags || item.tags || "").map(t => t.toLowerCase());
 
-        // фильтр по активному тегу (если выбран)
         if (tagFilter) {
           if (!tags.includes(tagFilter)) return false;
         }
 
-        // поиск: по словам или по #тегу
         if (!q) return true;
 
-        // если пользователь ввёл "#..."
         if (q.startsWith("#")) {
           return tags.some(t => t.includes(q));
         }
@@ -675,46 +782,40 @@
       document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
       if (el) el.classList.add("active");
 
-      // title
       const titles = {
         home: "КПСС",
         schedule: "Расписание",
         hashtags: "Хэштеги",
         other: "Прочее",
         gallery: "Галерея",
-        important: "Важное"
+        important: "Важное",
+        admin: "⚙️ Админ"
       };
       document.getElementById("mainTitle").textContent = titles[pageName] || "КПСС";
 
-      // pages
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       const page = document.getElementById(`page-${pageName}`);
       if (page) page.classList.add("active");
 
-      // search only in "other"
       const sb = document.getElementById("otherSearchBox");
       if (sb) sb.style.display = (pageName === "other") ? "block" : "none";
 
-      // update render if needed
       if (pageName === "other") renderOtherPage();
+      if (pageName === "admin") renderAdminPage();
     }
 
     function openOtherWithTag(tag) {
       setOtherTag(tag);
-
-      // включаем страницу "Прочее"
       const otherMenuItem = Array.from(document.querySelectorAll(".menu-item"))
         .find(x => (x.textContent || "").toLowerCase().includes("прочее"));
       switchPage("other", otherMenuItem || null);
-
-      // скроллим вверх
       document.getElementById("mainContent")?.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function setOtherTag(tag) {
       otherActiveTag = normalizeTag(tag);
       const inp = document.getElementById("otherSearchInput");
-      if (inp) inp.value = ""; // чтобы не мешало
+      if (inp) inp.value = "";
       renderOtherPage();
     }
 
@@ -726,7 +827,6 @@
     function splitTags(s) {
       const raw = String(s || "").trim();
       if (!raw) return [];
-      // поддержка: "#a #b", "#a, #b", "a, b", "a b"
       const parts = raw
         .replace(/,/g, " ")
         .split(/\s+/)
@@ -734,7 +834,6 @@
         .filter(Boolean)
         .map(normalizeTag);
 
-      // уникальные
       const seen = new Set();
       const out = [];
       for (const t of parts) {
@@ -776,23 +875,6 @@
       document.getElementById("imageModal").classList.remove("active");
     }
 
-    function showMenu() {
-      document.getElementById("infoModalTitle").textContent = "Меню";
-      document.getElementById("infoModalContent").innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div onclick="refreshData()" style="padding:12px;background:#404040;border-radius:12px;cursor:pointer;">Обновить</div>
-          <div onclick="location.reload()" style="padding:12px;background:#404040;border-radius:12px;cursor:pointer;">Перезагрузить</div>
-        </div>
-      `;
-      document.getElementById("infoModal").classList.add("active");
-    }
-
-    function refreshData() {
-      closeModal("infoModal");
-      loadAttempts = 0;
-      loadAllData();
-    }
-
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("closed");
       document.getElementById("mainContent").classList.toggle("expanded");
@@ -828,6 +910,11 @@
       document.getElementById(modalId).classList.remove("active");
     }
 
+    function refreshData() {
+      loadAttempts = 0;
+      loadAllData();
+    }
+
     // ======== SAFE ========
     function escapeHtml(s) {
       return String(s ?? "")
@@ -842,6 +929,208 @@
     }
     function escapeJs(s) {
       return String(s ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+    }
+
+    // ======== RIGHT DRAWER ========
+    function openDrawer() {
+      document.getElementById("rightDrawer")?.classList.add("open");
+      document.getElementById("drawerBackdrop")?.classList.add("show");
+    }
+    function closeDrawer() {
+      document.getElementById("rightDrawer")?.classList.remove("open");
+      document.getElementById("drawerBackdrop")?.classList.remove("show");
+    }
+
+    function showAbout() {
+      closeDrawer();
+      document.getElementById("infoModalTitle").textContent = "О проекте";
+      document.getElementById("infoModalContent").innerHTML = `
+        <div style="color:#b0b0b0;font-size:14px;line-height:1.5;">
+          КПСС — сайт/приложение, которое читает данные из Google Таблицы и показывает их красиво.
+          <br><br>
+          <b>Скрытая админка:</b> 5 раз нажми на “КПСС” в боковом меню.
+        </div>
+      `;
+      document.getElementById("infoModal").classList.add("active");
+    }
+
+    // ======== ADMIN: 5 taps ========
+    let tapCount = 0;
+    let tapTimer = null;
+
+    function initAdminTap() {
+      const title = document.getElementById("kpssTitle");
+      if (!title) return;
+
+      title.addEventListener("click", () => {
+        tapCount++;
+        clearTimeout(tapTimer);
+        tapTimer = setTimeout(() => (tapCount = 0), 1200);
+
+        if (tapCount >= 5) {
+          tapCount = 0;
+          showAdminPasswordModal();
+        }
+      });
+    }
+
+    function showAdminPasswordModal() {
+      document.getElementById("infoModalTitle").textContent = "Админ-доступ";
+      document.getElementById("infoModalContent").innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:#b0b0b0;font-size:13px;">Введи пароль:</div>
+          <input id="adminPassInput" type="password"
+                style="width:100%;padding:14px 16px;border-radius:14px;background:#404040;border:1px solid #505050;color:#f0f0f0;font-size:14px;"
+                placeholder="Пароль" />
+          <button class="retry-btn" style="margin-top:6px;" onclick="checkAdminPassword()">Войти</button>
+          <div id="adminPassError" style="color:#ff99cc;font-size:13px;display:none;">Неверный пароль</div>
+        </div>
+      `;
+      document.getElementById("infoModal").classList.add("active");
+      setTimeout(() => document.getElementById("adminPassInput")?.focus(), 50);
+    }
+
+    function checkAdminPassword() {
+      const v = document.getElementById("adminPassInput")?.value || "";
+      const err = document.getElementById("adminPassError");
+      if (v === ADMIN_PASSWORD) {
+        isAdmin = true;
+        closeModal("infoModal");
+        enableAdminUI();
+        showUpdateIndicator();
+      } else {
+        if (err) err.style.display = "block";
+      }
+    }
+
+    function enableAdminUI() {
+      const mi = document.getElementById("adminMenuItem");
+      if (mi) mi.style.display = "flex";
+      renderAdminPage();
+    }
+
+    function renderAdminPage() {
+      const container = document.getElementById("page-admin");
+      if (!container) return;
+
+      if (!isAdmin) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет доступа</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="admin-wrap">
+          <div class="admin-card">
+            <h3>📌 Важное</h3>
+            <div class="admin-row">
+              <input id="adm_imp_sender" placeholder="Отправитель (sender)" value="Староста">
+              <textarea id="adm_imp_text" rows="3" placeholder="Текст"></textarea>
+              <input id="adm_imp_link" placeholder="Ссылка (необязательно)">
+              <input id="adm_imp_time" placeholder="Время (например 12:30)">
+              <input id="adm_imp_date" placeholder="Дата (например 03.03.2026)">
+              <button class="admin-btn" onclick="submitAdmin('important')">Отправить</button>
+              <div class="admin-note">Добавит строку в лист <b>important</b>.</div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <h3>💬 Чаты</h3>
+            <div class="admin-row">
+              <input id="adm_chat_title" placeholder="Название">
+              <input id="adm_chat_emoji" placeholder="Эмодзи (например 🔥)">
+              <textarea id="adm_chat_text" rows="3" placeholder="Сообщение"></textarea>
+              <button class="admin-btn" onclick="submitAdmin('chats')">Отправить</button>
+              <div class="admin-note">Добавит строку в лист <b>chats</b>.</div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <h3>📅 Расписание</h3>
+            <div class="admin-row">
+              <input id="adm_s_day" placeholder="День (например Понедельник)">
+              <input id="adm_s_time" placeholder="Время (например 09:00)">
+              <input id="adm_s_subject" placeholder="Предмет">
+              <input id="adm_s_room" placeholder="Кабинет">
+              <input id="adm_s_teacher" placeholder="Преподаватель (необязательно)">
+              <button class="admin-btn" onclick="submitAdmin('schedule')">Отправить</button>
+              <div class="admin-note">Добавит строку в лист <b>schedule</b>.</div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <h3>🖼️ Галерея</h3>
+            <div class="admin-row">
+              <input id="adm_g_title" placeholder="Название">
+              <input id="adm_g_url" placeholder="Ссылка на картинку (image_url)">
+              <input id="adm_g_date" placeholder="Дата (необязательно)">
+              <button class="admin-btn" onclick="submitAdmin('gallery')">Отправить</button>
+              <div class="admin-note">Добавит строку в лист <b>gallery</b>.</div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <h3>🔧 Примечание</h3>
+            <div class="admin-note">
+              После отправки данные добавятся в Google Таблицу. Затем нажми <b>🔄 Обновить данные</b> (кружок ● сверху справа).
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function val(id) {
+      const el = document.getElementById(id);
+      return (el?.value || "").trim();
+    }
+
+    // Отправка в Apps Script
+    async function submitAdmin(type) {
+      if (!isAdmin) return;
+
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
+        alert("Сначала вставь APPS_SCRIPT_URL (Web App) в index.html");
+        return;
+      }
+
+      let data = {};
+      if (type === "important") {
+        data = {
+          sender: val("adm_imp_sender"),
+          text: val("adm_imp_text"),
+          link: val("adm_imp_link"),
+          time: val("adm_imp_time"),
+          date: val("adm_imp_date")
+        };
+        if (!data.text) return alert("Заполни текст (important)");
+      }
+      if (type === "chats") {
+        data = { title: val("adm_chat_title"), emoji: val("adm_chat_emoji"), text: val("adm_chat_text") };
+        if (!data.title || !data.text) return alert("Заполни название и сообщение (chats)");
+      }
+      if (type === "schedule") {
+        data = { day: val("adm_s_day"), time: val("adm_s_time"), subject: val("adm_s_subject"), room: val("adm_s_room"), teacher: val("adm_s_teacher") };
+        if (!data.day || !data.time || !data.subject) return alert("Заполни день, время, предмет (schedule)");
+      }
+      if (type === "gallery") {
+        data = { title: val("adm_g_title"), image_url: val("adm_g_url"), date: val("adm_g_date") };
+        if (!data.title || !data.image_url) return alert("Заполни название и ссылку на картинку (gallery)");
+      }
+
+      try {
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type, data })
+        });
+        const txt = await res.text();
+        if (!res.ok) throw new Error("HTTP " + res.status + " — " + txt);
+
+        showUpdateIndicator();
+        loadAttempts = 0;
+        loadAllData();
+      } catch (e) {
+        alert("Ошибка отправки: " + (e?.message || e));
+      }
     }
   </script>
 </body>
