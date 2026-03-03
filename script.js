@@ -1,35 +1,183 @@
-// ======== ПУБЛИЧНАЯ ССЫЛКА ========
-const PUBLISHED_HTML_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6/pubhtml";
-const SPREADSHEET_ID = "2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6";
+/* ===================== CONFIG ===================== */
 
-// ======== ВСТАВЬ СЮДА URL ТВОЕГО APPS SCRIPT WEB APP ========
-// Пример: https://script.google.com/macros/s/AKfycb.../exec
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwalEkAJu_6U34WK1gbwuC4q0y41Ez2zedWYoZntUmlxGmkSFTEmyqjfVt9wdIHeTQrA/exec";
+// Основная таблица (чтение)
+const PUBLISHED_HTML_URL = "PASTE_MAIN_PUBHTML_URL_HERE";
+const SPREADSHEET_ID = "PASTE_MAIN_SPREADSHEET_E_ID_HERE";
 
-// ======== ДАННЫЕ ========
-let appData = { important: [], schedule: [], hashtags: [], gallery: [], other: [], chats: [] };
-let loadAttempts = 0;
+// Users/Chat API (обязательно /exec)
+const USERS_CHAT_API_URL = "PASTE_USERS_CHAT_WEBAPP_EXEC_URL_HERE";
 
-// ======== ФИЛЬТР "ПРОЧЕЕ" ========
-let otherActiveTag = ""; // #tag
-
-// ======== ADMIN ========
-let isAdmin = false;
+// Admin запись (если нужна)
+const MAIN_DATA_APPS_SCRIPT_URL = "PASTE_MAIN_DATA_WEBAPP_EXEC_URL_HERE";
 const ADMIN_PASSWORD = "kpssadmin";
 
-// ======== START ========
-window.onload = function () {
+/* ===================== STATE ===================== */
+
+let appData = { important: [], schedule: [], hashtags: [], gallery: [], other: [], chats: [] };
+let loadAttempts = 0;
+let otherActiveTag = "";
+
+let isAdmin = false;
+
+// auth
+let currentUser = null;
+let currentPeer = null;
+
+// chat loading
+let seenMsgIds = new Set();     // FIX дублей
+let lastCursor = null;          // cursor = created_at of last received
+let chatTimer = null;
+
+// unread global
+let globalUnread = 0;
+
+// emoji list
+const EMOJIS = ["😀","😄","😁","😂","😅","😊","😍","😘","😎","🤔","😴","😭","😡","👍","👎","🙏","🔥","💯","🎉","❤️","💔","🤝","✅","⚠️","📌","📅","📍","💬","🫶"];
+
+/* ===================== INIT ===================== */
+
+window.addEventListener("load", () => {
+  bindUI();
+  loadSession();
   initAdminTap();
+
   loadAllData();
   setInterval(() => { loadAttempts = 0; loadAllData(); }, 5 * 60 * 1000);
 
-  window.onclick = function (e) {
-    if (e.target.classList.contains("modal")) closeModal(e.target.id);
-    if (e.target.classList.contains("image-modal")) closeImageModal();
-  };
-};
+  // swipe: open right drawer by swiping LEFT
+  initSwipeForDrawer();
+});
 
-// ======== ЗАГРУЗКА ========
+/* ===================== UI BINDINGS ===================== */
+
+function bindUI() {
+  // header buttons
+  $("#menuSquareBtn").addEventListener("click", toggleSidebar);
+  $("#circleMenuBtn").addEventListener("click", openDrawer);
+
+  // drawer
+  $("#drawerBackdrop").addEventListener("click", closeDrawer);
+  $("#drawerCloseBtn").addEventListener("click", closeDrawer);
+  $("#drawerRefreshBtn").addEventListener("click", () => { refreshData(); closeDrawer(); });
+  $("#drawerAuthBtn").addEventListener("click", () => { openAuthModal(); closeDrawer(); });
+  $("#drawerLogoutBtn").addEventListener("click", () => { logoutUser(); closeDrawer(); });
+  $("#drawerReloadBtn").addEventListener("click", () => location.reload());
+  $("#drawerAboutBtn").addEventListener("click", () => { showAbout(); closeDrawer(); });
+
+  // modal close
+  $("#modalCloseBtn").addEventListener("click", () => closeModal("infoModal"));
+
+  // image modal
+  $("#imageModalCloseBtn").addEventListener("click", closeImageModal);
+  $("#imageModal").addEventListener("click", (e) => {
+    if (e.target.id === "imageModal") closeImageModal();
+  });
+
+  // sidebar nav click
+  document.querySelectorAll(".menu-item[data-page]").forEach(item => {
+    item.addEventListener("click", () => {
+      switchPage(item.dataset.page, item);
+      closeSidebarOnMobile();
+    });
+  });
+
+  // other search
+  $("#otherSearchInput").addEventListener("keyup", () => renderOtherPage());
+}
+
+/* ===================== MENU / PAGES ===================== */
+
+function toggleSidebar() {
+  $("#sidebar").classList.toggle("closed");
+  $("#mainContent").classList.toggle("expanded");
+}
+
+function closeSidebarOnMobile() {
+  if (window.innerWidth <= 768) {
+    $("#sidebar").classList.add("closed");
+    $("#mainContent").classList.add("expanded");
+  }
+}
+
+function switchPage(pageName, el) {
+  // stop chat timer if leaving chat
+  if (pageName !== "chat") stopChatTimer();
+
+  document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
+  if (el) el.classList.add("active");
+
+  const titles = {
+    home:"КПСС", schedule:"Расписание", hashtags:"Хэштеги", other:"Прочее",
+    gallery:"Галерея", important:"Важное", chats:"Чаты", contacts:"Контакты",
+    chat:"Чат", admin:"⚙️ Админ"
+  };
+  $("#mainTitle").textContent = titles[pageName] || "КПСС";
+
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  const page = $(`#page-${pageName}`);
+  if (page) page.classList.add("active");
+
+  $("#otherSearchBox").style.display = (pageName === "other") ? "block" : "none";
+
+  if (pageName === "other") renderOtherPage();
+  if (pageName === "admin") renderAdminPage();
+  if (pageName === "contacts") renderContactsPage();
+  if (pageName === "chats") renderChatsPage();
+  if (pageName === "chat") renderChatPage();
+}
+
+/* ===================== DRAWER ===================== */
+
+function openDrawer() {
+  $("#rightDrawer").classList.add("open");
+  $("#drawerBackdrop").classList.add("show");
+}
+function closeDrawer() {
+  $("#rightDrawer").classList.remove("open");
+  $("#drawerBackdrop").classList.remove("show");
+}
+
+/* swipe left to open drawer (from right edge) */
+function initSwipeForDrawer() {
+  let startX = 0, startY = 0, tracking = false;
+
+  window.addEventListener("touchstart", (e) => {
+    const t = e.touches[0];
+    startX = t.clientX; startY = t.clientY;
+    // start near right edge to avoid conflict with scrolling
+    tracking = (window.innerWidth - startX) < 40;
+  }, { passive: true });
+
+  window.addEventListener("touchend", (e) => {
+    if (!tracking) return;
+    tracking = false;
+
+    const t = e.changedTouches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    // swipe left: dx negative
+    if (Math.abs(dx) > 70 && Math.abs(dy) < 40 && dx < 0) {
+      openDrawer();
+    }
+  }, { passive: true });
+
+  // swipe right to close drawer (anywhere on drawer)
+  $("#rightDrawer").addEventListener("touchstart", (e) => {
+    const t = e.touches[0];
+    startX = t.clientX; startY = t.clientY;
+  }, { passive: true });
+
+  $("#rightDrawer").addEventListener("touchend", (e) => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    if (Math.abs(dx) > 70 && Math.abs(dy) < 40 && dx > 0) closeDrawer();
+  }, { passive: true });
+}
+
+/* ===================== LOADING MAIN DATA ===================== */
+
 async function loadAllData() {
   showLoading(true);
   loadAttempts++;
@@ -39,7 +187,7 @@ async function loadAllData() {
     if (!pubhtml) throw new Error("Не удалось получить pubhtml");
 
     const sheets = extractSheetsFromPubhtml(pubhtml);
-    if (!sheets.length) throw new Error("Не найдено ни одной вкладки (gid) в pubhtml");
+    if (!sheets.length) throw new Error("Не найдено ни одной вкладки (gid)");
 
     const temp = { important: [], schedule: [], hashtags: [], gallery: [], other: [], chats: [] };
 
@@ -64,264 +212,107 @@ async function loadAllData() {
     updateMembersText();
 
     if (hasData()) {
-      renderAll();
+      renderAllMainPages();
       showLoading(false);
       showUpdateIndicator();
-      if (isAdmin) renderAdminPage();
     } else {
-      throw new Error("Нет данных (листы пустые или не распознаны по заголовкам)");
+      throw new Error("Нет данных (листы пустые или не распознаны)");
     }
+
+    // refresh unread if logged in
+    if (currentUser) refreshGlobalUnread();
+
   } catch (err) {
     console.error(err);
-
-    if (loadAttempts < 3) {
-      setTimeout(loadAllData, 1000);
-    } else {
-      showLoading(false);
-      showError("Не удалось загрузить данные");
-    }
+    if (loadAttempts < 3) setTimeout(loadAllData, 1000);
+    else { showLoading(false); showError("Не удалось загрузить данные"); }
   }
 }
 
-function updateMembersText() {
-  // Если у тебя есть лист с участниками — тут можно считать.
-  // Пока оставим заглушку:
-  const text = "данные из таблицы";
-  const m1 = document.getElementById("membersCount");
-  const m2 = document.getElementById("headerMembers");
-  if (m1) m1.textContent = text;
-  if (m2) m2.textContent = text;
-}
+function refreshData() { loadAttempts = 0; loadAllData(); }
 
 function hasData() {
   return (appData.important?.length || 0) > 0 ||
-         (appData.schedule?.length || 0) > 0 ||
-         (appData.hashtags?.length || 0) > 0 ||
-         (appData.gallery?.length || 0) > 0 ||
-         (appData.other?.length || 0) > 0 ||
-         (appData.chats?.length || 0) > 0;
+    (appData.schedule?.length || 0) > 0 ||
+    (appData.hashtags?.length || 0) > 0 ||
+    (appData.gallery?.length || 0) > 0 ||
+    (appData.other?.length || 0) > 0 ||
+    (appData.chats?.length || 0) > 0;
 }
 
-// ======== ВЫТАСКИВАЕМ GID ИЗ pubhtml ========
-function extractSheetsFromPubhtml(html) {
-  try {
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const links = Array.from(doc.querySelectorAll("a[href*='gid=']"));
+/* ===================== RENDER MAIN PAGES ===================== */
 
-    const found = new Map(); // gid -> title
-    for (const a of links) {
-      const href = a.getAttribute("href") || "";
-      const m = href.match(/gid=(\d+)/);
-      if (!m) continue;
-      const gid = m[1];
-      const title = (a.textContent || "").trim() || `gid_${gid}`;
-      if (!found.has(gid)) found.set(gid, title);
-    }
-
-    if (!found.size) {
-      const re = /gid=(\d+)/g;
-      let m;
-      while ((m = re.exec(html)) !== null) {
-        const gid = m[1];
-        if (!found.has(gid)) found.set(gid, `gid_${gid}`);
-      }
-    }
-
-    return Array.from(found.entries()).map(([gid, title]) => ({ gid, title }));
-  } catch {
-    return [];
-  }
-}
-
-// ======== ОПРЕДЕЛЯЕМ ТИП ЛИСТА ПО ЗАГОЛОВКАМ ========
-function detectSheetType(headers) {
-  const h = headers.map(x => x.toLowerCase().trim());
-
-  // important: sender,text,time/date,(link optional)
-  if (h.includes("sender") && h.includes("text") && (h.includes("time") || h.includes("date"))) return "important";
-
-  // schedule: day,time,subject,room,teacher
-  if (h.includes("day") && h.includes("time") && h.includes("subject")) return "schedule";
-
-  // hashtags: category,tag
-  if (h.includes("category") && h.includes("tag")) return "hashtags";
-
-  // gallery: title,image_url/date
-  if (h.includes("title") && (h.includes("image_url") || h.includes("image"))) return "gallery";
-
-  // other: title,url,hashtags/tags
-  if (h.includes("title") && h.includes("url") && (h.includes("hashtags") || h.includes("tags"))) return "other";
-
-  // chats: title,emoji,text
-  if (h.includes("title") && (h.includes("emoji") || h.includes("icon")) && h.includes("text")) return "chats";
-
-  return null;
-}
-
-function rowsToObjects(rows, headers) {
-  const out = [];
-  for (let i = 1; i < rows.length; i++) {
-    const row = rows[i];
-    if (!row || row.every(v => (v ?? "").toString().trim() === "")) continue;
-
-    const obj = {};
-    for (let j = 0; j < headers.length; j++) {
-      const key = (headers[j] ?? "").toString().trim();
-      if (!key) continue;
-      obj[key] = (row[j] ?? "").toString().trim();
-    }
-    if (Object.keys(obj).length) out.push(obj);
-  }
-  return out;
-}
-
-// ======== CSV ПАРСЕР ========
-function parseCsv(text) {
-  const rows = [];
-  let row = [];
-  let cur = "";
-  let inQuotes = false;
-
-  text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    const next = text[i + 1];
-
-    if (ch === '"') {
-      if (inQuotes && next === '"') { cur += '"'; i++; }
-      else { inQuotes = !inQuotes; }
-      continue;
-    }
-    if (ch === "," && !inQuotes) { row.push(cur); cur = ""; continue; }
-    if (ch === "\n" && !inQuotes) { row.push(cur); rows.push(row); row = []; cur = ""; continue; }
-    cur += ch;
-  }
-  row.push(cur);
-  rows.push(row);
-
-  while (rows.length && rows[rows.length - 1].every(v => (v ?? "").toString().trim() === "")) rows.pop();
-  return rows;
-}
-
-async function fetchWithTimeout(url, timeout = 10000) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  try {
-    const res = await fetch(url, { signal: controller.signal, cache: "no-cache" });
-    clearTimeout(id);
-    return res.ok ? await res.text() : null;
-  } catch {
-    clearTimeout(id);
-    return null;
-  }
-}
-
-// ======== РЕНДЕР ========
-function renderAll() {
+function renderAllMainPages() {
   renderHomePage();
   renderSchedulePage();
   renderHashtagsPage();
   renderOtherPage();
   renderGalleryPage();
   renderImportantPage();
-  // chats пока не показаны отдельной вкладкой — если надо, добавлю
 }
 
 function renderHomePage() {
-  const container = document.getElementById("page-home");
-  if (!container) return;
-
+  const container = $("#page-home");
   let html = "";
 
   if (appData.important?.length) {
     html += `<div class="section">
-      <div class="section-header" onclick="toggleSection(this)"><span>📌</span> Важное<span>▼</span></div>
+      <div class="section-header" data-toggle><span>📌</span> Важное<span>▼</span></div>
       <div class="section-content">`;
     appData.important.slice(0, 3).forEach(item => {
       html += `<div class="important-card">
-          <div class="sender">${escapeHtml(item.sender || "")}</div>
-          <div class="text">${escapeHtml(item.text || "")}</div>
-          ${item.link ? `<a href="${escapeAttr(item.link)}" target="_blank" class="link" onclick="event.stopPropagation()">🔗 Ссылка</a>` : ""}
-          <div class="time">${escapeHtml(item.time || "")} ${item.date ? "· " + escapeHtml(item.date) : ""}</div>
-        </div>`;
+        <div class="sender">${esc(item.sender || "")}</div>
+        <div class="text">${esc(item.text || "")}</div>
+        ${item.link ? `<a class="link" href="${escAttr(item.link)}" target="_blank">🔗 Ссылка</a>` : ""}
+        <div class="time">${esc(item.time || "")} ${item.date ? "· " + esc(item.date) : ""}</div>
+      </div>`;
     });
     html += `</div></div>`;
   }
 
   if (appData.schedule?.length) {
     html += `<div class="section">
-      <div class="section-header" onclick="toggleSection(this)"><span>📅</span> Ближайшее<span>▼</span></div>
+      <div class="section-header" data-toggle><span>📅</span> Ближайшее<span>▼</span></div>
       <div class="section-content"><div class="schedule-grid">`;
     appData.schedule.slice(0, 4).forEach(lesson => {
       html += `<div class="schedule-lesson">
-          <div class="lesson-time">${escapeHtml(lesson.time || "")}</div>
-          <div class="lesson-details">
-            <div class="lesson-name">${escapeHtml(lesson.subject || "")}</div>
-            <div class="lesson-place">${escapeHtml(lesson.room || "")} ${lesson.teacher ? "· " + escapeHtml(lesson.teacher) : ""}</div>
-          </div>
-        </div>`;
+        <div class="lesson-time">${esc(lesson.time || "")}</div>
+        <div class="lesson-details">
+          <div class="lesson-name">${esc(lesson.subject || "")}</div>
+          <div class="lesson-place">${esc(lesson.room || "")} ${lesson.teacher ? "· " + esc(lesson.teacher) : ""}</div>
+        </div>
+      </div>`;
     });
-    html += `</div></div></div>`;
-  }
-
-  if (appData.other?.length) {
-    html += `<div class="section">
-      <div class="section-header" onclick="toggleSection(this)"><span>🔗</span> Прочее<span>▼</span></div>
-      <div class="section-content"><div class="other-list">`;
-
-    appData.other.slice(0, 4).forEach(item => {
-      const url = item.url || "";
-      const title = item.title || "";
-      const text = item.text || "";
-      const date = item.date || "";
-      const tags = splitTags(item.hashtags || item.tags || "");
-
-      html += `<div class="other-item">
-          <div class="other-icon">🔗</div>
-          <div class="other-body">
-            <div class="other-title">
-              <a href="${escapeAttr(url)}" target="_blank" title="${escapeAttr(url)}">${escapeHtml(title)}</a>
-              <span class="other-date">${escapeHtml(date)}</span>
-            </div>
-            ${text ? `<div class="other-text">${escapeHtml(text)}</div>` : ``}
-            ${tags.length ? `<div class="other-tags">${tags.slice(0,6).map(t => `<span class="hashtag" onclick="openOtherWithTag('${escapeJs(t)}')">${escapeHtml(t)}</span>`).join("")}</div>` : ``}
-          </div>
-        </div>`;
-    });
-
     html += `</div></div></div>`;
   }
 
   container.innerHTML = html || `<div class="section" style="padding:20px;text-align:center;">Нет данных</div>`;
+  bindSectionToggles(container);
 }
 
 function renderImportantPage() {
-  const container = document.getElementById("page-important");
-  if (!container) return;
-
+  const container = $("#page-important");
   if (!appData.important?.length) {
     container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет важного</div>`;
     return;
   }
-
-  let html = `<div class="section"><div class="section-header"><span>📌</span> Вся важная информация<span></span></div><div class="section-content">`;
+  let html = `<div class="section">
+    <div class="section-header" style="cursor:default;"><span>📌</span> Вся важная информация<span></span></div>
+    <div class="section-content">`;
   appData.important.forEach(item => {
     html += `<div class="important-card">
-        <div class="sender">${escapeHtml(item.sender || "")}</div>
-        <div class="text">${escapeHtml(item.text || "")}</div>
-        ${item.link ? `<a href="${escapeAttr(item.link)}" target="_blank" class="link">🔗 Ссылка</a>` : ""}
-        <div class="time">${escapeHtml(item.time || "")} ${item.date ? "· " + escapeHtml(item.date) : ""}</div>
-      </div>`;
+      <div class="sender">${esc(item.sender || "")}</div>
+      <div class="text">${esc(item.text || "")}</div>
+      ${item.link ? `<a class="link" href="${escAttr(item.link)}" target="_blank">🔗 Ссылка</a>` : ""}
+      <div class="time">${esc(item.time || "")} ${item.date ? "· " + esc(item.date) : ""}</div>
+    </div>`;
   });
   html += `</div></div>`;
   container.innerHTML = html;
 }
 
 function renderSchedulePage() {
-  const container = document.getElementById("page-schedule");
-  if (!container) return;
-
+  const container = $("#page-schedule");
   if (!appData.schedule?.length) {
     container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет расписания</div>`;
     return;
@@ -331,32 +322,33 @@ function renderSchedulePage() {
   appData.schedule.forEach(lesson => {
     const day = lesson.day || "";
     if (!day) return;
-    if (!byDay[day]) byDay[day] = [];
-    byDay[day].push(lesson);
+    (byDay[day] ||= []).push(lesson);
   });
 
-  let html = `<div class="section"><div class="section-header"><span>📅</span> Полное расписание<span></span></div><div class="section-content"><div class="schedule-grid">`;
+  let html = `<div class="section">
+    <div class="section-header" style="cursor:default;"><span>📅</span> Полное расписание<span></span></div>
+    <div class="section-content"><div class="schedule-grid">`;
+
   Object.keys(byDay).forEach(day => {
-    html += `<div class="schedule-day"><h3>${escapeHtml(day)}</h3>`;
+    html += `<div class="schedule-day"><h3>${esc(day)}</h3>`;
     byDay[day].forEach(lesson => {
       html += `<div class="schedule-lesson">
-          <div class="lesson-time">${escapeHtml(lesson.time || "")}</div>
-          <div class="lesson-details">
-            <div class="lesson-name">${escapeHtml(lesson.subject || "")}</div>
-            <div class="lesson-place">${escapeHtml(lesson.room || "")} ${lesson.teacher ? "· " + escapeHtml(lesson.teacher) : ""}</div>
-          </div>
-        </div>`;
+        <div class="lesson-time">${esc(lesson.time || "")}</div>
+        <div class="lesson-details">
+          <div class="lesson-name">${esc(lesson.subject || "")}</div>
+          <div class="lesson-place">${esc(lesson.room || "")} ${lesson.teacher ? "· " + esc(lesson.teacher) : ""}</div>
+        </div>
+      </div>`;
     });
     html += `</div>`;
   });
+
   html += `</div></div></div>`;
   container.innerHTML = html;
 }
 
 function renderHashtagsPage() {
-  const container = document.getElementById("page-hashtags");
-  if (!container) return;
-
+  const container = $("#page-hashtags");
   if (!appData.hashtags?.length) {
     container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет хэштегов</div>`;
     return;
@@ -367,53 +359,60 @@ function renderHashtagsPage() {
     const cat = t.category || "Другое";
     const tag = t.tag || "";
     if (!tag) return;
-    if (!byCategory[cat]) byCategory[cat] = [];
-    byCategory[cat].push(tag);
+    (byCategory[cat] ||= []).push(tag.startsWith("#") ? tag : "#" + tag);
   });
 
   let html = `<div class="section">
-    <div class="section-header"><span>✨</span> Все хэштеги<span></span></div>
+    <div class="section-header" style="cursor:default;"><span>✨</span> Все хэштеги<span></span></div>
     <div class="hashtags-container">`;
 
   Object.keys(byCategory).forEach(category => {
     html += `<div class="hashtag-category">
-        <div class="category-title">${escapeHtml(category)}</div>
-        <div class="hashtag-cloud">`;
+      <div class="category-title">${esc(category)}</div>
+      <div class="hashtag-cloud">`;
     byCategory[category].forEach(tag => {
-      html += `<span class="hashtag" onclick="openOtherWithTag('${escapeJs(tag)}')">${escapeHtml(tag)}</span>`;
+      html += `<span class="hashtag" data-open-other="${escAttr(tag)}">${esc(tag)}</span>`;
     });
     html += `</div></div>`;
   });
 
   html += `</div></div>`;
   container.innerHTML = html;
+
+  container.querySelectorAll("[data-open-other]").forEach(el => {
+    el.addEventListener("click", () => openOtherWithTag(el.getAttribute("data-open-other")));
+  });
 }
 
 function renderGalleryPage() {
-  const container = document.getElementById("page-gallery");
-  if (!container) return;
-
+  const container = $("#page-gallery");
   if (!appData.gallery?.length) {
     container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет галереи</div>`;
     return;
   }
 
-  let html = `<div class="section"><div class="section-header"><span>🖼️</span> Галерея<span></span></div><div class="gallery-grid">`;
+  let html = `<div class="section">
+    <div class="section-header" style="cursor:default;"><span>🖼️</span> Галерея<span></span></div>
+    <div class="gallery-grid">`;
+
   appData.gallery.forEach(item => {
     const imgUrl = item.image_url || item.image || "";
-    html += `<div class="gallery-item" onclick="openImageModal('${escapeJs(imgUrl)}')">`;
-    if (imgUrl) html += `<img class="gallery-image" src="${escapeAttr(imgUrl)}" onerror="this.style.display='none'">`;
-    html += `<div class="gallery-caption">${escapeHtml(item.title || "")}</div></div>`;
+    html += `<div class="gallery-item" data-img="${escAttr(imgUrl)}">`;
+    if (imgUrl) html += `<img class="gallery-image" src="${escAttr(imgUrl)}" onerror="this.style.display='none'">`;
+    html += `<div class="gallery-caption">${esc(item.title || "")}</div></div>`;
   });
+
   html += `</div></div>`;
   container.innerHTML = html;
+
+  container.querySelectorAll("[data-img]").forEach(el => {
+    el.addEventListener("click", () => openImageModal(el.getAttribute("data-img")));
+  });
 }
 
 function renderOtherPage() {
-  const container = document.getElementById("page-other");
-  if (!container) return;
-
-  const q = (document.getElementById("otherSearchInput")?.value || "").trim().toLowerCase();
+  const container = $("#page-other");
+  const q = ($("#otherSearchInput")?.value || "").trim().toLowerCase();
   const tagFilter = (otherActiveTag || "").trim().toLowerCase();
 
   const items = (appData.other || []).filter(item => {
@@ -422,55 +421,34 @@ function renderOtherPage() {
     const url = (item.url || "").toLowerCase();
     const tags = splitTags(item.hashtags || item.tags || "").map(t => t.toLowerCase());
 
-    if (tagFilter) {
-      if (!tags.includes(tagFilter)) return false;
-    }
-
+    if (tagFilter && !tags.includes(tagFilter)) return false;
     if (!q) return true;
-
-    if (q.startsWith("#")) {
-      return tags.some(t => t.includes(q));
-    }
-
+    if (q.startsWith("#")) return tags.some(t => t.includes(q));
     return title.includes(q) || text.includes(q) || url.includes(q) || tags.some(t => t.includes(q));
   });
 
   let html = `<div class="section">
-    <div class="section-header">
+    <div class="section-header" style="cursor:default;">
       <span>🔗</span> Прочее
-      <span>${tagFilter ? escapeHtml(otherActiveTag) : ""}</span>
+      <span>${tagFilter ? esc(otherActiveTag) : ""}</span>
     </div>
     <div class="section-content">
-      <div class="hashtags-container" style="padding:12px 16px 6px 16px;">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-          ${tagFilter ? `<span class="hashtag active" onclick="clearOtherTag()">Сбросить</span>` : `<span class="hashtag" onclick="clearOtherTag()">Сбросить</span>`}
-          ${tagFilter ? `<span style="color:#b0b0b0;font-size:12px;">Фильтр по тегу включён</span>` : `<span style="color:#b0b0b0;font-size:12px;">Кликни тег или введи #тег в поиск</span>`}
-        </div>
-      </div>
-      <div class="other-list">
-  `;
+      <div class="other-list">`;
 
   if (!items.length) {
     html += `<div style="padding:18px 16px;color:#b0b0b0;">Ничего не найдено</div>`;
   } else {
     items.forEach(item => {
-      const url = item.url || "";
-      const title = item.title || "";
-      const text = item.text || "";
-      const date = item.date || "";
-      const tags = splitTags(item.hashtags || item.tags || "");
-
-      html += `<div class="other-item">
-          <div class="other-icon">🔗</div>
-          <div class="other-body">
-            <div class="other-title">
-              <a href="${escapeAttr(url)}" target="_blank" title="${escapeAttr(url)}">${escapeHtml(title)}</a>
-              <span class="other-date">${escapeHtml(date)}</span>
-            </div>
-            ${text ? `<div class="other-text">${escapeHtml(text)}</div>` : ``}
-            ${tags.length ? `<div class="other-tags">${tags.map(t => `<span class="hashtag ${tagFilter && t.toLowerCase()===tagFilter ? "active":""}" onclick="setOtherTag('${escapeJs(t)}')">${escapeHtml(t)}</span>`).join("")}</div>` : ``}
+      html += `<div class="other-item" onclick="window.open('${escAttr(item.url || "")}','_blank')">
+        <div class="other-icon">🔗</div>
+        <div class="other-body">
+          <div class="other-title">
+            <div class="t">${esc(item.title || "")}</div>
+            <div class="other-date">${esc(item.date || "")}</div>
           </div>
-        </div>`;
+          ${item.text ? `<div class="other-text">${esc(item.text)}</div>` : ``}
+        </div>
+      </div>`;
     });
   }
 
@@ -478,196 +456,501 @@ function renderOtherPage() {
   container.innerHTML = html;
 }
 
-// ======== NAV ========
-function switchPage(pageName, el) {
-  document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
-  if (el) el.classList.add("active");
-
-  const titles = {
-    home: "КПСС",
-    schedule: "Расписание",
-    hashtags: "Хэштеги",
-    other: "Прочее",
-    gallery: "Галерея",
-    important: "Важное",
-    admin: "⚙️ Админ"
-  };
-  document.getElementById("mainTitle").textContent = titles[pageName] || "КПСС";
-
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  const page = document.getElementById(`page-${pageName}`);
-  if (page) page.classList.add("active");
-
-  const sb = document.getElementById("otherSearchBox");
-  if (sb) sb.style.display = (pageName === "other") ? "block" : "none";
-
-  if (pageName === "other") renderOtherPage();
-  if (pageName === "admin") renderAdminPage();
+function bindSectionToggles(container) {
+  container.querySelectorAll("[data-toggle]").forEach(h => {
+    h.addEventListener("click", () => {
+      const content = h.nextElementSibling;
+      const arrow = h.querySelector("span:last-child");
+      if (!content) return;
+      const hidden = content.style.display === "none";
+      content.style.display = hidden ? "block" : "none";
+      if (arrow) arrow.textContent = hidden ? "▼" : "▶";
+    });
+  });
 }
+
+/* ===================== OTHER TAGS ===================== */
 
 function openOtherWithTag(tag) {
-  setOtherTag(tag);
-  const otherMenuItem = Array.from(document.querySelectorAll(".menu-item"))
-    .find(x => (x.textContent || "").toLowerCase().includes("прочее"));
-  switchPage("other", otherMenuItem || null);
-  document.getElementById("mainContent")?.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function setOtherTag(tag) {
   otherActiveTag = normalizeTag(tag);
-  const inp = document.getElementById("otherSearchInput");
-  if (inp) inp.value = "";
-  renderOtherPage();
-}
-
-function clearOtherTag() {
-  otherActiveTag = "";
-  renderOtherPage();
+  $("#otherSearchInput").value = "";
+  // activate menu item
+  const otherMenu = [...document.querySelectorAll(".menu-item")].find(x => x.dataset.page === "other");
+  switchPage("other", otherMenu || null);
+  $("#mainContent").scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function splitTags(s) {
   const raw = String(s || "").trim();
   if (!raw) return [];
-  const parts = raw
-    .replace(/,/g, " ")
-    .split(/\s+/)
-    .map(x => x.trim())
-    .filter(Boolean)
-    .map(normalizeTag);
-
-  const seen = new Set();
-  const out = [];
-  for (const t of parts) {
-    const key = t.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(t);
-  }
-  return out;
+  return raw.replace(/,/g," ").split(/\s+/).map(x=>x.trim()).filter(Boolean).map(normalizeTag);
 }
-
 function normalizeTag(t) {
-  const s = String(t || "").trim();
+  const s = String(t||"").trim();
   if (!s) return "";
   return s.startsWith("#") ? s : ("#" + s);
 }
 
-// ======== UI HELPERS ========
-function toggleSection(header) {
-  const content = header.nextElementSibling;
-  const arrow = header.querySelector("span:last-child");
-  if (!content) return;
-  if (content.style.display === "none") {
-    content.style.display = "block";
-    if (arrow) arrow.textContent = "▼";
-  } else {
-    content.style.display = "none";
-    if (arrow) arrow.textContent = "▶";
-  }
+/* ===================== AUTH + CONTACTS + CHATS ===================== */
+
+function loadSession() {
+  try {
+    const s = localStorage.getItem("kpss_user");
+    if (s) currentUser = JSON.parse(s);
+  } catch {}
+  updateAuthUI();
 }
 
-function openImageModal(imageUrl) {
-  if (!imageUrl) return;
-  document.getElementById("modalImage").src = imageUrl;
-  document.getElementById("imageModal").classList.add("active");
+function saveSession(u) {
+  currentUser = u;
+  localStorage.setItem("kpss_user", JSON.stringify(u));
+  updateMembersText();
+  updateAuthUI();
+  refreshGlobalUnread();
 }
 
-function closeImageModal() {
-  document.getElementById("imageModal").classList.remove("active");
+function logoutUser() {
+  stopChatTimer();
+  currentUser = null;
+  currentPeer = null;
+  localStorage.removeItem("kpss_user");
+  updateMembersText();
+  updateAuthUI();
+  showUpdateIndicator();
+  // back home
+  const homeMenu = [...document.querySelectorAll(".menu-item")].find(x => x.dataset.page === "home");
+  switchPage("home", homeMenu || null);
 }
 
-function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("closed");
-  document.getElementById("mainContent").classList.toggle("expanded");
+function updateMembersText() {
+  const text = currentUser ? `👤 ${currentUser.username}` : "данные из таблицы";
+  $("#membersCount").textContent = text;
+  $("#headerMembers").textContent = text;
 }
 
-function closeSidebarOnMobile() {
-  if (window.innerWidth <= 768) {
-    document.getElementById("sidebar").classList.add("closed");
-    document.getElementById("mainContent").classList.add("expanded");
-  }
-}
-
-function showLoading(show) {
-  document.getElementById("loading").style.display = show ? "flex" : "none";
-  document.getElementById("app").style.display = show ? "none" : "block";
-  document.getElementById("error").style.display = "none";
-}
-
-function showError(message) {
-  document.getElementById("error").style.display = "block";
-  document.getElementById("errorMessage").textContent = message;
-  document.getElementById("app").style.display = "none";
-  document.getElementById("loading").style.display = "none";
-}
-
-function showUpdateIndicator() {
-  const ind = document.getElementById("updateIndicator");
-  ind.classList.add("show");
-  setTimeout(() => ind.classList.remove("show"), 2000);
-}
-
-function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove("active");
-}
-
-function refreshData() {
-  loadAttempts = 0;
-  loadAllData();
-}
-
-// ======== SAFE ========
-function escapeHtml(s) {
-  return String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-function escapeAttr(s) {
-  return escapeHtml(s).replace(/"/g, "&quot;");
-}
-function escapeJs(s) {
-  return String(s ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
-}
-
-// ======== RIGHT DRAWER ========
-function openDrawer() {
-  document.getElementById("rightDrawer")?.classList.add("open");
-  document.getElementById("drawerBackdrop")?.classList.add("show");
-}
-function closeDrawer() {
-  document.getElementById("rightDrawer")?.classList.remove("open");
-  document.getElementById("drawerBackdrop")?.classList.remove("show");
+function updateAuthUI() {
+  const logged = !!currentUser;
+  $("#contactsMenuItem").style.display = logged ? "flex" : "none";
+  $("#chatsMenuItem").style.display = logged ? "flex" : "none";
+  $("#drawerLogoutBtn").style.display = logged ? "block" : "none";
 }
 
 function showAbout() {
-  closeDrawer();
-  document.getElementById("infoModalTitle").textContent = "О проекте";
-  document.getElementById("infoModalContent").innerHTML = `
+  openModal("О проекте", `
     <div style="color:#b0b0b0;font-size:14px;line-height:1.5;">
-      КПСС — сайт/приложение, которое читает данные из Google Таблицы и показывает их красиво.
+      КПСС — сайт/приложение, которое читает данные из Google Таблицы.
       <br><br>
-      <b>Скрытая админка:</b> 5 раз нажми на “КПСС” в боковом меню.
+      <b>Админка:</b> 5 раз нажми на “КПСС” в боковом меню.
+      <br><br>
+      <b>Чаты:</b> регистрация и сообщения в отдельной таблице KPSS_USERS_CHAT через WebApp API.
     </div>
-  `;
-  document.getElementById("infoModal").classList.add("active");
+  `);
 }
 
-// ======== ADMIN: 5 taps ========
+function openAuthModal() {
+  openModal("Вход / Регистрация", `
+    <div class="auth-form">
+      <input id="auth_username" placeholder="Username (уникальный)">
+      <input id="auth_pass" type="password" placeholder="Пароль">
+      <button class="btn" id="authLoginBtn">Войти</button>
+      <button class="btn" id="authRegBtn" style="background:#404040;color:#ff99cc;border:1px solid #505050;">Зарегистрироваться</button>
+      <div id="auth_err" style="color:#ff99cc;font-size:13px;display:none;margin-top:8px;"></div>
+      <div style="color:#808080;font-size:12px;line-height:1.35;margin-top:10px;">
+        * Это простая регистрация (для группы), не для “важных” паролей.
+      </div>
+    </div>
+  `);
+
+  $("#authLoginBtn").onclick = authLogin;
+  $("#authRegBtn").onclick = authRegister;
+}
+
+function authErr(msg) {
+  const el = $("#auth_err");
+  el.style.display = "block";
+  el.textContent = msg;
+}
+
+function ensureChatApi() {
+  return USERS_CHAT_API_URL && !USERS_CHAT_API_URL.includes("PASTE_");
+}
+
+async function authLogin() {
+  const u = ($("#auth_username").value || "").trim();
+  const p = ($("#auth_pass").value || "").trim();
+  if (!u || !p) return authErr("Заполни username и пароль");
+  if (!ensureChatApi()) return authErr("Вставь USERS_CHAT_API_URL (/exec) в app.js");
+
+  try {
+    const r = await jsonp(`${USERS_CHAT_API_URL}?action=login&username=${enc(u)}&pass=${enc(p)}`);
+    if (!r?.ok) return authErr(r?.error || "Ошибка входа");
+    saveSession(r.data);
+    closeModal("infoModal");
+    showUpdateIndicator();
+  } catch (e) {
+    authErr("Ошибка сети: " + (e?.message || e));
+  }
+}
+
+async function authRegister() {
+  const u = ($("#auth_username").value || "").trim();
+  const p = ($("#auth_pass").value || "").trim();
+  if (!u || !p) return authErr("Заполни username и пароль");
+  if (!ensureChatApi()) return authErr("Вставь USERS_CHAT_API_URL (/exec) в app.js");
+
+  try {
+    const r = await jsonp(`${USERS_CHAT_API_URL}?action=register&username=${enc(u)}&pass=${enc(p)}`);
+    if (!r?.ok) return authErr(r?.error || "Ошибка регистрации");
+    saveSession(r.data);
+    closeModal("infoModal");
+    showUpdateIndicator();
+  } catch (e) {
+    authErr("Ошибка сети: " + (e?.message || e));
+  }
+}
+
+/* Telegram-like chats list */
+async function renderChatsPage() {
+  const container = $("#page-chats");
+  if (!currentUser) {
+    container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Войди, чтобы видеть чаты</div>`;
+    return;
+  }
+  if (!ensureChatApi()) {
+    container.innerHTML = `<div class="section" style="padding:20px;text-align:center;color:#ff99cc;">Нужен USERS_CHAT_API_URL</div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="section" style="padding:20px;">Загрузка...</div>`;
+
+  try {
+    const r = await jsonp(`${USERS_CHAT_API_URL}?action=chats&user_id=${enc(currentUser.user_id)}`);
+    if (!r?.ok) throw new Error(r?.error || "Ошибка");
+
+    const chats = r.data || [];
+    globalUnread = chats.reduce((s,c)=>s+(Number(c.unread||0)),0);
+    updateGlobalUnreadBadge();
+
+    let html = `<div class="section">
+      <div class="section-header" style="cursor:default;"><span>💬</span> Чаты<span>${esc(currentUser.username)}</span></div>
+      <div class="section-content"><div class="other-list">`;
+
+    if (!chats.length) {
+      html += `<div style="padding:18px 16px;color:#b0b0b0;">Нет чатов. Открой “Контакты” и напиши кому-то.</div>`;
+    } else {
+      chats.forEach(c => {
+        html += `
+          <div class="other-item" data-open-chat="${escAttr(c.peer_id)}" data-peer-name="${escAttr(c.peer_name)}">
+            <div class="other-icon">👤</div>
+            <div class="other-body">
+              <div class="other-title">
+                <div class="t">${esc(c.peer_name)}</div>
+                <div class="row-right">
+                  <span class="other-date">${esc(formatTime(c.last_time))}</span>
+                  ${Number(c.unread||0) ? `<span class="badge">${Number(c.unread||0)}</span>` : ``}
+                </div>
+              </div>
+              <div class="other-text">${esc(c.last_text || "…")}</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    html += `</div></div></div>`;
+    container.innerHTML = html;
+
+    container.querySelectorAll("[data-open-chat]").forEach(el => {
+      el.addEventListener("click", () => {
+        openChat(el.getAttribute("data-open-chat"), el.getAttribute("data-peer-name"));
+      });
+    });
+
+  } catch (e) {
+    container.innerHTML = `<div class="section" style="padding:20px;text-align:center;color:#ff99cc;">Ошибка: ${esc(e?.message || e)}</div>`;
+  }
+}
+
+/* Contacts show last msg + button "write" */
+async function renderContactsPage() {
+  const container = $("#page-contacts");
+  if (!currentUser) {
+    container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Войди, чтобы видеть контакты</div>`;
+    return;
+  }
+  if (!ensureChatApi()) {
+    container.innerHTML = `<div class="section" style="padding:20px;text-align:center;color:#ff99cc;">Нужен USERS_CHAT_API_URL</div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="section" style="padding:20px;">Загрузка...</div>`;
+
+  try {
+    // contacts_with_last includes last_text/last_time/unread
+    const r = await jsonp(`${USERS_CHAT_API_URL}?action=contacts_with_last&user_id=${enc(currentUser.user_id)}`);
+    if (!r?.ok) throw new Error(r?.error || "Ошибка");
+
+    const list = r.data || [];
+    globalUnread = list.reduce((s,c)=>s+(Number(c.unread||0)),0);
+    updateGlobalUnreadBadge();
+
+    let html = `<div class="section">
+      <div class="section-header" style="cursor:default;"><span>📇</span> Контакты<span>${esc(currentUser.username)}</span></div>
+      <div class="section-content"><div class="other-list">`;
+
+    if (!list.length) {
+      html += `<div style="padding:18px 16px;color:#b0b0b0;">Пока нет других пользователей</div>`;
+    } else {
+      list.forEach(c => {
+        html += `
+          <div class="other-item" data-open-chat="${escAttr(c.user_id)}" data-peer-name="${escAttr(c.username)}">
+            <div class="other-icon">👤</div>
+            <div class="other-body">
+              <div class="other-title">
+                <div class="t">${esc(c.username)}</div>
+                <div class="row-right">
+                  <span class="other-date">${esc(formatTime(c.last_time))}</span>
+                  ${Number(c.unread||0) ? `<span class="badge">${Number(c.unread||0)}</span>` : ``}
+                </div>
+              </div>
+              <div class="other-text">${esc(c.last_text || "Написать сообщение")}</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    html += `</div></div></div>`;
+    container.innerHTML = html;
+
+    container.querySelectorAll("[data-open-chat]").forEach(el => {
+      el.addEventListener("click", () => {
+        openChat(el.getAttribute("data-open-chat"), el.getAttribute("data-peer-name"));
+      });
+    });
+
+  } catch (e) {
+    container.innerHTML = `<div class="section" style="padding:20px;text-align:center;color:#ff99cc;">Ошибка: ${esc(e?.message || e)}</div>`;
+  }
+}
+
+/* ===================== CHAT PAGE ===================== */
+
+function openChat(peerId, peerName) {
+  currentPeer = { user_id: peerId, username: peerName };
+  seenMsgIds = new Set();
+  lastCursor = null;
+
+  // go chat page
+  switchPage("chat", null);
+
+  // mark read immediately (server)
+  markRead().catch(()=>{});
+}
+
+function renderChatPage() {
+  const container = $("#page-chat");
+  if (!currentUser) {
+    container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нужен вход</div>`;
+    return;
+  }
+  if (!currentPeer) {
+    container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Выбери контакт</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="section">
+      <div class="chat-header-row">
+        <div class="chat-back" id="chatBackBtn">←</div>
+        <div class="chat-title">${esc(currentPeer.username)}</div>
+        <div style="color:#808080;font-size:12px;" id="readHint"></div>
+      </div>
+
+      <div class="chat-wrap">
+        <div id="chatBox" class="chat-box"></div>
+
+        <div id="emojiPanel" class="emoji-panel"></div>
+
+        <div class="chat-input-row">
+          <button class="emoji-btn" id="emojiBtn">😊</button>
+          <input id="chatInput" placeholder="Сообщение...">
+          <button class="btn" id="sendBtn">Отпр.</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  $("#chatBackBtn").onclick = () => {
+    const chatsMenu = $("#chatsMenuItem");
+    if (chatsMenu && chatsMenu.style.display !== "none") switchPage("chats", chatsMenu);
+    else switchPage("contacts", $("#contactsMenuItem"));
+  };
+
+  $("#sendBtn").onclick = sendChat;
+  $("#chatInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendChat(); });
+
+  // emoji panel
+  const panel = $("#emojiPanel");
+  panel.innerHTML = EMOJIS.map(x => `<div class="emoji" data-e="${escAttr(x)}">${esc(x)}</div>`).join("");
+  panel.querySelectorAll("[data-e]").forEach(el => {
+    el.addEventListener("click", () => {
+      const input = $("#chatInput");
+      input.value = (input.value || "") + el.getAttribute("data-e");
+      input.focus();
+    });
+  });
+
+  $("#emojiBtn").onclick = () => panel.classList.toggle("show");
+
+  // initial load
+  loadChatMessages(true);
+
+  // timer
+  startChatTimer();
+}
+
+function startChatTimer() {
+  stopChatTimer();
+  chatTimer = setInterval(() => {
+    loadChatMessages(false);
+    // refresh unread in sidebar badge
+    refreshGlobalUnread();
+  }, 3500);
+}
+
+function stopChatTimer() {
+  if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+}
+
+async function loadChatMessages(scrollToBottom) {
+  if (!currentUser || !currentPeer) return;
+
+  try {
+    let url = `${USERS_CHAT_API_URL}?action=messages&user_id=${enc(currentUser.user_id)}&peer_id=${enc(currentPeer.user_id)}`;
+    if (lastCursor) url += `&after=${enc(lastCursor)}`;
+
+    const r = await jsonp(url);
+    if (!r?.ok) return;
+
+    const msgs = r.data || [];
+    if (!msgs.length) return;
+
+    const box = $("#chatBox");
+    for (const m of msgs) {
+      const mid = String(m.id || "");
+      if (mid && seenMsgIds.has(mid)) continue;     // ✅ FIX дублей
+      if (mid) seenMsgIds.add(mid);
+
+      const mine = m.from_id === currentUser.user_id;
+      const div = document.createElement("div");
+      div.className = "bubble " + (mine ? "mine" : "their");
+
+      const text = document.createElement("div");
+      text.textContent = m.text || "";
+      div.appendChild(text);
+
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      const status = mine ? (m.read_by_me ? "✓✓" : "✓") : "";
+      meta.textContent = `${formatTime(m.created_at)} ${status}`.trim();
+      div.appendChild(meta);
+
+      box.appendChild(div);
+
+      // cursor
+      if (m.created_at) lastCursor = m.created_at;
+    }
+
+    if (scrollToBottom) box.scrollTop = box.scrollHeight;
+    else box.scrollTop = box.scrollHeight;
+
+    // after showing messages from peer -> mark read
+    await markRead();
+
+  } catch {}
+}
+
+async function sendChat() {
+  const input = $("#chatInput");
+  const text = (input.value || "").trim();
+  if (!text) return;
+  input.value = "";
+
+  try {
+    await fetch(USERS_CHAT_API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "send",
+        from_id: currentUser.user_id,
+        to_id: currentPeer.user_id,
+        text
+      })
+    });
+
+    // local optimistic cursor refresh
+    setTimeout(() => loadChatMessages(true), 600);
+  } catch {}
+}
+
+async function markRead() {
+  if (!currentUser || !currentPeer) return;
+
+  // server will mark messages to currentUser from peer as read
+  try {
+    await fetch(USERS_CHAT_API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "mark_read",
+        user_id: currentUser.user_id,
+        peer_id: currentPeer.user_id
+      })
+    });
+
+    // update hint quickly
+    const hint = $("#readHint");
+    if (hint) hint.textContent = "прочитано";
+  } catch {}
+}
+
+/* ===================== UNREAD BADGES ===================== */
+
+async function refreshGlobalUnread() {
+  if (!currentUser || !ensureChatApi()) return;
+  try {
+    const r = await jsonp(`${USERS_CHAT_API_URL}?action=unread_total&user_id=${enc(currentUser.user_id)}`);
+    if (!r?.ok) return;
+    globalUnread = Number(r.data?.total || 0);
+    updateGlobalUnreadBadge();
+  } catch {}
+}
+
+function updateGlobalUnreadBadge() {
+  const b1 = $("#globalUnreadBadge");
+  if (!b1) return;
+  if (globalUnread > 0) {
+    b1.style.display = "inline-block";
+    b1.textContent = String(globalUnread);
+  } else {
+    b1.style.display = "none";
+  }
+}
+
+/* ===================== ADMIN (5 taps) ===================== */
+
 let tapCount = 0;
 let tapTimer = null;
 
 function initAdminTap() {
-  const title = document.getElementById("kpssTitle");
-  if (!title) return;
-
+  const title = $("#kpssTitle");
   title.addEventListener("click", () => {
     tapCount++;
     clearTimeout(tapTimer);
-    tapTimer = setTimeout(() => (tapCount = 0), 1200);
-
+    tapTimer = setTimeout(() => tapCount = 0, 1200);
     if (tapCount >= 5) {
       tapCount = 0;
       showAdminPasswordModal();
@@ -676,164 +959,204 @@ function initAdminTap() {
 }
 
 function showAdminPasswordModal() {
-  document.getElementById("infoModalTitle").textContent = "Админ-доступ";
-  document.getElementById("infoModalContent").innerHTML = `
+  openModal("Админ-доступ", `
     <div style="display:flex;flex-direction:column;gap:10px;">
       <div style="color:#b0b0b0;font-size:13px;">Введи пароль:</div>
-      <input id="adminPassInput" type="password"
-            style="width:100%;padding:14px 16px;border-radius:14px;background:#404040;border:1px solid #505050;color:#f0f0f0;font-size:14px;"
-            placeholder="Пароль" />
-      <button class="retry-btn" style="margin-top:6px;" onclick="checkAdminPassword()">Войти</button>
+      <input id="adminPassInput" type="password" placeholder="Пароль"
+        style="width:100%;padding:14px 16px;border-radius:14px;background:#404040;border:1px solid #505050;color:#f0f0f0;font-size:14px;" />
+      <button class="btn" id="adminLoginBtn">Войти</button>
       <div id="adminPassError" style="color:#ff99cc;font-size:13px;display:none;">Неверный пароль</div>
     </div>
-  `;
-  document.getElementById("infoModal").classList.add("active");
-  setTimeout(() => document.getElementById("adminPassInput")?.focus(), 50);
-}
+  `);
 
-function checkAdminPassword() {
-  const v = document.getElementById("adminPassInput")?.value || "";
-  const err = document.getElementById("adminPassError");
-  if (v === ADMIN_PASSWORD) {
-    isAdmin = true;
-    closeModal("infoModal");
-    enableAdminUI();
-    showUpdateIndicator();
-  } else {
-    if (err) err.style.display = "block";
-  }
-}
-
-function enableAdminUI() {
-  const mi = document.getElementById("adminMenuItem");
-  if (mi) mi.style.display = "flex";
-  renderAdminPage();
+  $("#adminLoginBtn").onclick = () => {
+    const v = ($("#adminPassInput").value || "");
+    if (v === ADMIN_PASSWORD) {
+      isAdmin = true;
+      $("#adminMenuItem").style.display = "flex";
+      closeModal("infoModal");
+      showUpdateIndicator();
+    } else {
+      $("#adminPassError").style.display = "block";
+    }
+  };
 }
 
 function renderAdminPage() {
-  const container = document.getElementById("page-admin");
-  if (!container) return;
-
+  const container = $("#page-admin");
   if (!isAdmin) {
     container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нет доступа</div>`;
     return;
   }
-
-  container.innerHTML = `
-    <div class="admin-wrap">
-      <div class="admin-card">
-        <h3>📌 Важное</h3>
-        <div class="admin-row">
-          <input id="adm_imp_sender" placeholder="Отправитель (sender)" value="Староста">
-          <textarea id="adm_imp_text" rows="3" placeholder="Текст"></textarea>
-          <input id="adm_imp_link" placeholder="Ссылка (необязательно)">
-          <input id="adm_imp_time" placeholder="Время (например 12:30)">
-          <input id="adm_imp_date" placeholder="Дата (например 03.03.2026)">
-          <button class="admin-btn" onclick="submitAdmin('important')">Отправить</button>
-          <div class="admin-note">Добавит строку в лист <b>important</b>.</div>
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <h3>💬 Чаты</h3>
-        <div class="admin-row">
-          <input id="adm_chat_title" placeholder="Название">
-          <input id="adm_chat_emoji" placeholder="Эмодзи (например 🔥)">
-          <textarea id="adm_chat_text" rows="3" placeholder="Сообщение"></textarea>
-          <button class="admin-btn" onclick="submitAdmin('chats')">Отправить</button>
-          <div class="admin-note">Добавит строку в лист <b>chats</b>.</div>
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <h3>📅 Расписание</h3>
-        <div class="admin-row">
-          <input id="adm_s_day" placeholder="День (например Понедельник)">
-          <input id="adm_s_time" placeholder="Время (например 09:00)">
-          <input id="adm_s_subject" placeholder="Предмет">
-          <input id="adm_s_room" placeholder="Кабинет">
-          <input id="adm_s_teacher" placeholder="Преподаватель (необязательно)">
-          <button class="admin-btn" onclick="submitAdmin('schedule')">Отправить</button>
-          <div class="admin-note">Добавит строку в лист <b>schedule</b>.</div>
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <h3>🖼️ Галерея</h3>
-        <div class="admin-row">
-          <input id="adm_g_title" placeholder="Название">
-          <input id="adm_g_url" placeholder="Ссылка на картинку (image_url)">
-          <input id="adm_g_date" placeholder="Дата (необязательно)">
-          <button class="admin-btn" onclick="submitAdmin('gallery')">Отправить</button>
-          <div class="admin-note">Добавит строку в лист <b>gallery</b>.</div>
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <h3>🔧 Примечание</h3>
-        <div class="admin-note">
-          После отправки данные добавятся в Google Таблицу. Затем нажми <b>🔄 Обновить данные</b> (кружок ● сверху справа).
-        </div>
-      </div>
-    </div>
-  `;
+  container.innerHTML = `<div class="section" style="padding:20px;color:#b0b0b0;">
+    Админка в этом варианте не развёрнута (твоя старая логика остаётся). Если нужно — скажи, какие формы оставляем, и я перенесу полностью сюда.
+  </div>`;
 }
 
-function val(id) {
-  const el = document.getElementById(id);
-  return (el?.value || "").trim();
+/* ===================== COMMON HELPERS ===================== */
+
+function openModal(title, html) {
+  $("#infoModalTitle").textContent = title;
+  $("#infoModalContent").innerHTML = html;
+  $("#infoModal").classList.add("active");
+}
+function closeModal(id) { $(`#${id}`).classList.remove("active"); }
+
+function openImageModal(url) {
+  if (!url) return;
+  $("#modalImage").src = url;
+  $("#imageModal").classList.add("active");
+}
+function closeImageModal() { $("#imageModal").classList.remove("active"); }
+
+function showLoading(show) {
+  $("#loading").style.display = show ? "flex" : "none";
+  $("#app").style.display = show ? "none" : "block";
+  $("#error").style.display = "none";
+}
+function showError(message) {
+  $("#error").style.display = "block";
+  $("#errorMessage").textContent = message;
+  $("#app").style.display = "none";
+  $("#loading").style.display = "none";
+}
+function showUpdateIndicator() {
+  const ind = $("#updateIndicator");
+  ind.classList.add("show");
+  setTimeout(() => ind.classList.remove("show"), 2000);
 }
 
-// Отправка в Apps Script
-async function submitAdmin(type) {
-  if (!isAdmin) return;
+function $(sel) { return document.querySelector(sel); }
+function esc(s) {
+  return String(s ?? "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+function escAttr(s) { return esc(s).replace(/"/g,"&quot;"); }
+function enc(s) { return encodeURIComponent(String(s ?? "")); }
 
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
-    alert("Сначала вставь APPS_SCRIPT_URL (Web App) в index.html");
-    return;
-  }
-
-  let data = {};
-  if (type === "important") {
-    data = {
-      sender: val("adm_imp_sender"),
-      text: val("adm_imp_text"),
-      link: val("adm_imp_link"),
-      time: val("adm_imp_time"),
-      date: val("adm_imp_date")
-    };
-    if (!data.text) return alert("Заполни текст (important)");
-  }
-  if (type === "chats") {
-    data = { title: val("adm_chat_title"), emoji: val("adm_chat_emoji"), text: val("adm_chat_text") };
-    if (!data.title || !data.text) return alert("Заполни название и сообщение (chats)");
-  }
-  if (type === "schedule") {
-    data = { day: val("adm_s_day"), time: val("adm_s_time"), subject: val("adm_s_subject"), room: val("adm_s_room"), teacher: val("adm_s_teacher") };
-    if (!data.day || !data.time || !data.subject) return alert("Заполни день, время, предмет (schedule)");
-  }
-  if (type === "gallery") {
-    data = { title: val("adm_g_title"), image_url: val("adm_g_url"), date: val("adm_g_date") };
-    if (!data.title || !data.image_url) return alert("Заполни название и ссылку на картинку (gallery)");
-  }
-
-  // ВАЖНО: отправляем как form-urlencoded, без JSON заголовков (иначе preflight/CORS)
-  const payload = JSON.stringify({ type, data });
-  const body = "payload=" + encodeURIComponent(payload);
-
+function formatTime(iso) {
+  if (!iso) return "";
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors", // важно: иначе браузер блокирует
-      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body
-    });
+    const d = new Date(iso);
+    const hh = String(d.getHours()).padStart(2,"0");
+    const mm = String(d.getMinutes()).padStart(2,"0");
+    return `${hh}:${mm}`;
+  } catch { return ""; }
+}
 
-    // Мы не можем прочитать ответ (no-cors), поэтому просто считаем успехом
-    showUpdateIndicator();
-    loadAttempts = 0;
-    loadAllData();
-  } catch (e) {
-    alert("Ошибка отправки: " + (e?.message || e));
+/* ===================== CSV / SHEET PARSING ===================== */
+
+function extractSheetsFromPubhtml(html) {
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const links = Array.from(doc.querySelectorAll("a[href*='gid=']"));
+    const found = new Map();
+    for (const a of links) {
+      const href = a.getAttribute("href") || "";
+      const m = href.match(/gid=(\d+)/);
+      if (!m) continue;
+      const gid = m[1];
+      const title = (a.textContent || "").trim() || `gid_${gid}`;
+      if (!found.has(gid)) found.set(gid, title);
+    }
+    if (!found.size) {
+      const re = /gid=(\d+)/g;
+      let m;
+      while ((m = re.exec(html)) !== null) {
+        const gid = m[1];
+        if (!found.has(gid)) found.set(gid, `gid_${gid}`);
+      }
+    }
+    return Array.from(found.entries()).map(([gid,title]) => ({ gid, title }));
+  } catch { return []; }
+}
+
+function detectSheetType(headers) {
+  const h = headers.map(x => x.toLowerCase().trim());
+  if (h.includes("sender") && h.includes("text") && (h.includes("time") || h.includes("date"))) return "important";
+  if (h.includes("day") && h.includes("time") && h.includes("subject")) return "schedule";
+  if (h.includes("category") && h.includes("tag")) return "hashtags";
+  if (h.includes("title") && (h.includes("image_url") || h.includes("image"))) return "gallery";
+  if (h.includes("title") && h.includes("url") && (h.includes("hashtags") || h.includes("tags"))) return "other";
+  return null;
+}
+
+function rowsToObjects(rows, headers) {
+  const out = [];
+  for (let i=1;i<rows.length;i++){
+    const row = rows[i];
+    if (!row || row.every(v => (v ?? "").toString().trim() === "")) continue;
+    const obj = {};
+    for (let j=0;j<headers.length;j++){
+      const key = (headers[j] ?? "").toString().trim();
+      if (!key) continue;
+      obj[key] = (row[j] ?? "").toString().trim();
+    }
+    if (Object.keys(obj).length) out.push(obj);
   }
+  return out;
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cur = "";
+  let inQuotes = false;
+
+  text = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+
+  for (let i=0;i<text.length;i++){
+    const ch = text[i];
+    const next = text[i+1];
+
+    if (ch === '"') {
+      if (inQuotes && next === '"') { cur += '"'; i++; }
+      else inQuotes = !inQuotes;
+      continue;
+    }
+    if (ch === "," && !inQuotes) { row.push(cur); cur=""; continue; }
+    if (ch === "\n" && !inQuotes) { row.push(cur); rows.push(row); row=[]; cur=""; continue; }
+    cur += ch;
+  }
+  row.push(cur);
+  rows.push(row);
+
+  while (rows.length && rows[rows.length-1].every(v => (v ?? "").toString().trim() === "")) rows.pop();
+  return rows;
+}
+
+async function fetchWithTimeout(url, timeout=10000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const res = await fetch(url, { signal: controller.signal, cache:"no-cache" });
+    clearTimeout(id);
+    return res.ok ? await res.text() : null;
+  } catch { clearTimeout(id); return null; }
+}
+
+/* ===================== JSONP (CORS SAFE GET) ===================== */
+
+function jsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cb = "cb_" + Math.random().toString(36).slice(2);
+    const s = document.createElement("script");
+
+    window[cb] = (data) => {
+      delete window[cb];
+      s.remove();
+      resolve(data);
+    };
+
+    s.onerror = () => {
+      delete window[cb];
+      s.remove();
+      reject(new Error("JSONP load error"));
+    };
+
+    const sep = url.includes("?") ? "&" : "?";
+    s.src = url + sep + "callback=" + cb;
+    document.body.appendChild(s);
+  });
 }
