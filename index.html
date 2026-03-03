@@ -1084,54 +1084,58 @@
     }
 
     // Отправка в Apps Script
-    async function submitAdmin(type) {
-      if (!isAdmin) return;
+async function submitAdmin(type) {
+  if (!isAdmin) return;
 
-      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
-        alert("Сначала вставь APPS_SCRIPT_URL (Web App) в index.html");
-        return;
-      }
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
+    alert("Сначала вставь APPS_SCRIPT_URL (Web App) в index.html");
+    return;
+  }
 
-      let data = {};
-      if (type === "important") {
-        data = {
-          sender: val("adm_imp_sender"),
-          text: val("adm_imp_text"),
-          link: val("adm_imp_link"),
-          time: val("adm_imp_time"),
-          date: val("adm_imp_date")
-        };
-        if (!data.text) return alert("Заполни текст (important)");
-      }
-      if (type === "chats") {
-        data = { title: val("adm_chat_title"), emoji: val("adm_chat_emoji"), text: val("adm_chat_text") };
-        if (!data.title || !data.text) return alert("Заполни название и сообщение (chats)");
-      }
-      if (type === "schedule") {
-        data = { day: val("adm_s_day"), time: val("adm_s_time"), subject: val("adm_s_subject"), room: val("adm_s_room"), teacher: val("adm_s_teacher") };
-        if (!data.day || !data.time || !data.subject) return alert("Заполни день, время, предмет (schedule)");
-      }
-      if (type === "gallery") {
-        data = { title: val("adm_g_title"), image_url: val("adm_g_url"), date: val("adm_g_date") };
-        if (!data.title || !data.image_url) return alert("Заполни название и ссылку на картинку (gallery)");
-      }
+  let data = {};
+  if (type === "important") {
+    data = {
+      sender: val("adm_imp_sender"),
+      text: val("adm_imp_text"),
+      link: val("adm_imp_link"),
+      time: val("adm_imp_time"),
+      date: val("adm_imp_date")
+    };
+    if (!data.text) return alert("Заполни текст (important)");
+  }
+  if (type === "chats") {
+    data = { title: val("adm_chat_title"), emoji: val("adm_chat_emoji"), text: val("adm_chat_text") };
+    if (!data.title || !data.text) return alert("Заполни название и сообщение (chats)");
+  }
+  if (type === "schedule") {
+    data = { day: val("adm_s_day"), time: val("adm_s_time"), subject: val("adm_s_subject"), room: val("adm_s_room"), teacher: val("adm_s_teacher") };
+    if (!data.day || !data.time || !data.subject) return alert("Заполни день, время, предмет (schedule)");
+  }
+  if (type === "gallery") {
+    data = { title: val("adm_g_title"), image_url: val("adm_g_url"), date: val("adm_g_date") };
+    if (!data.title || !data.image_url) return alert("Заполни название и ссылку на картинку (gallery)");
+  }
 
-      try {
-        const res = await fetch(APPS_SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type, data })
-        });
-        const txt = await res.text();
-        if (!res.ok) throw new Error("HTTP " + res.status + " — " + txt);
+  // ВАЖНО: отправляем как form-urlencoded, без JSON заголовков (иначе preflight/CORS)
+  const payload = JSON.stringify({ type, data });
+  const body = "payload=" + encodeURIComponent(payload);
 
-        showUpdateIndicator();
-        loadAttempts = 0;
-        loadAllData();
-      } catch (e) {
-        alert("Ошибка отправки: " + (e?.message || e));
-      }
-    }
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors", // важно: иначе браузер блокирует
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body
+    });
+
+    // Мы не можем прочитать ответ (no-cors), поэтому просто считаем успехом
+    showUpdateIndicator();
+    loadAttempts = 0;
+    loadAllData();
+  } catch (e) {
+    alert("Ошибка отправки: " + (e?.message || e));
+  }
+}
   </script>
 </body>
 </html>
