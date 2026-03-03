@@ -1,11 +1,11 @@
 /* ===================== CONFIG ===================== */
 
 // Основная таблица (чтение)
-const PUBLISHED_HTML_URL = "PASTE_MAIN_PUBHTML_URL_HERE";
-const SPREADSHEET_ID = "PASTE_MAIN_SPREADSHEET_E_ID_HERE";
+const PUBLISHED_HTML_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6/pubhtml";
+const SPREADSHEET_ID = "2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6";
 
 // Users/Chat API (обязательно /exec)
-const USERS_CHAT_API_URL = "PASTE_USERS_CHAT_WEBAPP_EXEC_URL_HERE";
+const USERS_CHAT_API_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ13vq3-vw9K1dtgZ8x-xW8CUZElJkXoEqDaX9IazumBLHrWnlVhOR9Q7HA5OdIr5lvyM7TlGymdwNT/pubhtml";
 
 // Admin запись (если нужна)
 const MAIN_DATA_APPS_SCRIPT_URL = "PASTE_MAIN_DATA_WEBAPP_EXEC_URL_HERE";
