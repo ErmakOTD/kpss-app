@@ -14,28 +14,43 @@
 
     .app-container{display:flex;height:100vh;width:100%;position:relative;}
 
-    .sidebar{width:280px;background:#363636;border-right:1px solid #404040;height:100vh;overflow-y:auto;transition:transform .2s ease;position:fixed;left:0;top:0;z-index:1000;}
-    .sidebar.closed{transform:translateX(-100%);}
+    /* ===== SIDEBAR (СПРАВА) ===== */
+    .sidebar{
+      width:280px;background:#363636;border-left:1px solid #404040;height:100vh;overflow-y:auto;
+      transition:transform .2s ease;position:fixed;right:0;top:0;z-index:1000;
+    }
+    .sidebar.closed{transform:translateX(100%);}
     .sidebar-header{padding:24px 20px;border-bottom:1px solid #404040;background:#363636;}
     .sidebar-header h2{font-size:22px;font-weight:600;color:#ff99cc;letter-spacing:-.3px;}
     .sidebar-header span{color:#b0b0b0;font-size:13px;margin-top:4px;display:block;}
     .sidebar-menu{padding:12px 0;}
-    .menu-item{display:flex;align-items:center;padding:12px 20px;gap:14px;color:#d0d0d0;cursor:pointer;transition:all .2s;border-left:3px solid transparent;margin:2px 0;}
+    .menu-item{display:flex;align-items:center;padding:12px 20px;gap:14px;color:#d0d0d0;cursor:pointer;transition:all .2s;border-right:3px solid transparent;margin:2px 0;}
     .menu-item:hover{background:#404040;color:#ff99cc;}
-    .menu-item.active{background:#404040;border-left-color:#ff99cc;color:#ff99cc;font-weight:500;}
+    .menu-item.active{background:#404040;border-right-color:#ff99cc;color:#ff99cc;font-weight:500;}
     .menu-item .icon{font-size:18px;width:24px;text-align:center;}
 
-    .main-content{flex:1;margin-left:280px;width:calc(100% - 280px);transition:margin-left .2s ease;height:100vh;overflow-y:auto;background:#2d2d2d;}
-    .main-content.expanded{margin-left:0;width:100%;}
+    /* ===== MAIN CONTENT (ОТСТУП СПРАВА) ===== */
+    .main-content{
+      flex:1;margin-right:280px;width:calc(100% - 280px);
+      transition:margin-right .2s ease;height:100vh;overflow-y:auto;background:#2d2d2d;
+    }
+    .main-content.expanded{margin-right:0;width:100%;}
 
     .content-header{background:#363636;padding:12px 20px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #404040;position:sticky;top:0;z-index:100;}
     .menu-toggle{font-size:20px;cursor:pointer;color:#b0b0b0;background:none;border:none;padding:4px 8px;border-radius:8px;}
     .menu-toggle:hover{background:#404040;color:#ff99cc;}
     .content-header h1{font-size:18px;font-weight:600;flex:1;color:#ff99cc;}
     .content-header span{font-size:13px;color:#b0b0b0;}
-    .header-actions{display:flex;gap:12px;color:#b0b0b0;}
-    .header-actions span{cursor:pointer;font-size:18px;padding:6px;border-radius:8px;}
-    .header-actions span:hover{background:#404040;color:#ff99cc;}
+    .header-actions{display:flex;gap:12px;color:#b0b0b0;align-items:center;}
+
+    /* кружок-меню */
+    .circle-btn{
+      width:34px;height:34px;border-radius:999px;
+      display:flex;align-items:center;justify-content:center;
+      background:#404040;border:1px solid #505050;color:#ff99cc;
+      cursor:pointer; user-select:none;
+    }
+    .circle-btn:hover{background:#ff99cc;color:#2d2d2d;border-color:#ff99cc;}
 
     /* pages */
     .page{display:none;padding:12px;}
@@ -120,22 +135,7 @@
     .retry-btn{background:#ff99cc;color:#2d2d2d;border:none;padding:14px 28px;border-radius:40px;margin-top:20px;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s;}
     .retry-btn:hover{background:#ffb3d9;transform:translateY(-2px);}
 
-    @media (max-width:768px){
-      .sidebar{position:fixed;}
-      .main-content{margin-left:0;width:100%;}
-      .content-header h1{font-size:16px;}
-      .search-box{top:53px;}
-    }
-
-    /* ===== RIGHT DRAWER MENU (справа) ===== */
-    .circle-btn{
-      width:34px;height:34px;border-radius:999px;
-      display:flex;align-items:center;justify-content:center;
-      background:#404040;border:1px solid #505050;color:#ff99cc;
-      cursor:pointer; user-select:none;
-    }
-    .circle-btn:hover{background:#ff99cc;color:#2d2d2d;border-color:#ff99cc;}
-
+    /* ===== RIGHT DRAWER (кружок сверху) ===== */
     .right-drawer{
       position:fixed; top:0; right:0; height:100vh; width:320px; max-width:92vw;
       background:#363636; border-left:1px solid #404040;
@@ -187,6 +187,27 @@
     }
     .admin-btn:hover{background:#ffb3d9;}
     .admin-note{color:#b0b0b0; font-size:12px; margin-top:8px; line-height:1.35;}
+
+    /* ===== CHAT ===== */
+    .chat-box{padding:14px 16px; max-height:58vh; overflow:auto; display:flex; flex-direction:column; gap:10px;}
+    .bubble{
+      max-width:85%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid #505050;
+      word-wrap:break-word;
+      white-space:pre-wrap;
+    }
+    .bubble.mine{align-self:flex-end;background:#ff99cc;color:#2d2d2d;}
+    .bubble.their{align-self:flex-start;background:#404040;color:#f0f0f0;}
+    .chat-input-row{padding:12px 16px;border-top:1px solid #404040;display:flex;gap:10px;}
+    .chat-input-row input{
+      flex:1;padding:12px 14px;border-radius:14px;background:#404040;border:1px solid #505050;color:#f0f0f0;
+    }
+
+    @media (max-width:768px){
+      .main-content{margin-right:0;width:100%;}
+    }
   </style>
 </head>
 <body>
@@ -202,7 +223,7 @@
   </div>
 
   <div class="app-container" id="app" style="display:none;">
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar closed" id="sidebar">
       <div class="sidebar-header">
         <h2 id="kpssTitle" style="cursor:pointer;">КПСС</h2>
         <span id="membersCount">данные из таблицы</span>
@@ -227,7 +248,13 @@
           <span class="icon">📌</span><span class="title">Важное</span>
         </div>
 
-        <!-- Админка: появляется только после входа -->
+        <!-- Контакты только после входа -->
+        <div class="menu-item" id="contactsMenuItem" style="display:none;"
+             onclick="switchPage('contacts', this); closeSidebarOnMobile()">
+          <span class="icon">📇</span><span class="title">Контакты</span>
+        </div>
+
+        <!-- Админка: появляется после скрытого входа -->
         <div class="menu-item" id="adminMenuItem" style="display:none;"
              onclick="switchPage('admin', this); closeSidebarOnMobile()">
           <span class="icon">⚙️</span><span class="title">Админ</span>
@@ -235,7 +262,7 @@
       </div>
     </div>
 
-    <div class="main-content" id="mainContent">
+    <div class="main-content expanded" id="mainContent">
       <div class="content-header">
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
         <h1 id="mainTitle">КПСС</h1>
@@ -258,11 +285,15 @@
       <div class="page" id="page-other"></div>
       <div class="page" id="page-gallery"></div>
       <div class="page" id="page-important"></div>
+
+      <div class="page" id="page-contacts"></div>
+      <div class="page" id="page-chat"></div>
+
       <div class="page" id="page-admin"></div>
     </div>
   </div>
 
-  <!-- modal (используем и для пароля) -->
+  <!-- modal (используем и для пароля/авторизации) -->
   <div class="modal" id="infoModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -282,7 +313,7 @@
 
   <div class="update-indicator" id="updateIndicator">Обновлено</div>
 
-  <!-- Правая боковая панель меню -->
+  <!-- Правая боковая панель меню (кружок) -->
   <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
   <div class="right-drawer" id="rightDrawer">
     <div class="drawer-header">
@@ -291,34 +322,50 @@
     </div>
     <div class="drawer-body">
       <div class="drawer-item" onclick="refreshData(); closeDrawer();">🔄 Обновить данные</div>
+      <div class="drawer-item" onclick="openAuthModal(); closeDrawer();">👤 Вход / Регистрация</div>
+      <div class="drawer-item" id="drawerLogout" style="display:none;" onclick="logoutUser(); closeDrawer();">🚪 Выйти</div>
       <div class="drawer-item" onclick="location.reload();">♻️ Перезагрузить</div>
-      <div class="drawer-item" onclick="showAbout();">ℹ️ О проекте</div>
+      <div class="drawer-item" onclick="showAbout(); closeDrawer();">ℹ️ О проекте</div>
     </div>
   </div>
 
   <script>
-    // ======== ПУБЛИЧНАЯ ССЫЛКА ========
+    // ================== ОСНОВНАЯ ТАБЛИЦА (чтение) ==================
     const PUBLISHED_HTML_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6/pubhtml";
     const SPREADSHEET_ID = "2PACX-1vRUMSq2ZBr4A0RpER5z6aXE49k6FEGHVumRZJm0SWHKit25wSpZI3buwEv08Anjg0llBHsweATSNzF6";
 
-    // ======== ВСТАВЬ СЮДА URL ТВОЕГО APPS SCRIPT WEB APP ========
-    // Пример: https://script.google.com/macros/s/AKfycb.../exec
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwalEkAJu_6U34WK1gbwuC4q0y41Ez2zedWYoZntUmlxGmkSFTEmyqjfVt9wdIHeTQrA/exec";
+    // ================== ОСНОВНАЯ АДМИНКА (запись) ==================
+    // Если админка пишет в основную таблицу - сюда вставляешь WebApp URL /exec
+    const MAIN_DATA_APPS_SCRIPT_URL = "PASTE_MAIN_DATA_WEBAPP_URL_HERE";
 
-    // ======== ДАННЫЕ ========
+    // ================== KPSS_USERS_CHAT (таблица чтения, не запись) ==================
+    // ТВОЯ ссылка (pubhtml) — полезна для проверки/публикации, но она read-only
+    const USERS_CHAT_PUBHTML_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ13vq3-vw9K1dtgZ8x-xW8CUZElJkXoEqDaX9IazumBLHrWnlVhOR9Q7HA5OdIr5lvyM7TlGymdwNT/pubhtml";
+
+    // ================== KPSS_USERS_CHAT API (обязательно для регистрации/чата) ==================
+    // СЮДА вставь URL Apps Script Web App /exec, который работает с листами users/messages
+    const USERS_CHAT_API_URL = "PASTE_USERS_CHAT_WEBAPP_URL_HERE";
+
+    // ======== ДАННЫЕ ОСНОВНОГО САЙТА ========
     let appData = { important: [], schedule: [], hashtags: [], gallery: [], other: [], chats: [] };
     let loadAttempts = 0;
+    let otherActiveTag = "";
 
-    // ======== ФИЛЬТР "ПРОЧЕЕ" ========
-    let otherActiveTag = ""; // #tag
-
-    // ======== ADMIN ========
+    // ======== ADMIN (скрытый вход) ========
     let isAdmin = false;
     const ADMIN_PASSWORD = "kpssadmin";
 
+    // ======== USERS/CHAT SESSION ========
+    let currentUser = null;   // {user_id, username}
+    let currentPeer = null;   // {user_id, username}
+    let lastMsgTime = null;
+    let chatTimer = null;
+
     // ======== START ========
     window.onload = function () {
+      loadSession();
       initAdminTap();
+
       loadAllData();
       setInterval(() => { loadAttempts = 0; loadAllData(); }, 5 * 60 * 1000);
 
@@ -328,7 +375,7 @@
       };
     };
 
-    // ======== ЗАГРУЗКА ========
+    // ======== ЗАГРУЗКА ОСНОВНЫХ ДАННЫХ ========
     async function loadAllData() {
       showLoading(true);
       loadAttempts++;
@@ -359,7 +406,6 @@
         }
 
         appData = temp;
-
         updateMembersText();
 
         if (hasData()) {
@@ -372,7 +418,6 @@
         }
       } catch (err) {
         console.error(err);
-
         if (loadAttempts < 3) {
           setTimeout(loadAllData, 1000);
         } else {
@@ -383,13 +428,9 @@
     }
 
     function updateMembersText() {
-      // Если у тебя есть лист с участниками — тут можно считать.
-      // Пока оставим заглушку:
-      const text = "данные из таблицы";
-      const m1 = document.getElementById("membersCount");
-      const m2 = document.getElementById("headerMembers");
-      if (m1) m1.textContent = text;
-      if (m2) m2.textContent = text;
+      const text = currentUser ? `👤 ${currentUser.username}` : "данные из таблицы";
+      document.getElementById("membersCount").textContent = text;
+      document.getElementById("headerMembers").textContent = text;
     }
 
     function hasData() {
@@ -401,13 +442,12 @@
              (appData.chats?.length || 0) > 0;
     }
 
-    // ======== ВЫТАСКИВАЕМ GID ИЗ pubhtml ========
     function extractSheetsFromPubhtml(html) {
       try {
         const doc = new DOMParser().parseFromString(html, "text/html");
         const links = Array.from(doc.querySelectorAll("a[href*='gid=']"));
 
-        const found = new Map(); // gid -> title
+        const found = new Map();
         for (const a of links) {
           const href = a.getAttribute("href") || "";
           const m = href.match(/gid=(\d+)/);
@@ -432,28 +472,15 @@
       }
     }
 
-    // ======== ОПРЕДЕЛЯЕМ ТИП ЛИСТА ПО ЗАГОЛОВКАМ ========
     function detectSheetType(headers) {
       const h = headers.map(x => x.toLowerCase().trim());
 
-      // important: sender,text,time/date,(link optional)
       if (h.includes("sender") && h.includes("text") && (h.includes("time") || h.includes("date"))) return "important";
-
-      // schedule: day,time,subject,room,teacher
       if (h.includes("day") && h.includes("time") && h.includes("subject")) return "schedule";
-
-      // hashtags: category,tag
       if (h.includes("category") && h.includes("tag")) return "hashtags";
-
-      // gallery: title,image_url/date
       if (h.includes("title") && (h.includes("image_url") || h.includes("image"))) return "gallery";
-
-      // other: title,url,hashtags/tags
       if (h.includes("title") && h.includes("url") && (h.includes("hashtags") || h.includes("tags"))) return "other";
-
-      // chats: title,emoji,text
       if (h.includes("title") && (h.includes("emoji") || h.includes("icon")) && h.includes("text")) return "chats";
-
       return null;
     }
 
@@ -474,7 +501,6 @@
       return out;
     }
 
-    // ======== CSV ПАРСЕР ========
     function parseCsv(text) {
       const rows = [];
       let row = [];
@@ -516,7 +542,7 @@
       }
     }
 
-    // ======== РЕНДЕР ========
+    // ======== РЕНДЕР ОСНОВНЫХ СТРАНИЦ ========
     function renderAll() {
       renderHomePage();
       renderSchedulePage();
@@ -524,7 +550,6 @@
       renderOtherPage();
       renderGalleryPage();
       renderImportantPage();
-      // chats пока не показаны отдельной вкладкой — если надо, добавлю
     }
 
     function renderHomePage() {
@@ -564,35 +589,8 @@
         html += `</div></div></div>`;
       }
 
-      if (appData.other?.length) {
-        html += `<div class="section">
-          <div class="section-header" onclick="toggleSection(this)"><span>🔗</span> Прочее<span>▼</span></div>
-          <div class="section-content"><div class="other-list">`;
-
-        appData.other.slice(0, 4).forEach(item => {
-          const url = item.url || "";
-          const title = item.title || "";
-          const text = item.text || "";
-          const date = item.date || "";
-          const tags = splitTags(item.hashtags || item.tags || "");
-
-          html += `<div class="other-item">
-              <div class="other-icon">🔗</div>
-              <div class="other-body">
-                <div class="other-title">
-                  <a href="${escapeAttr(url)}" target="_blank" title="${escapeAttr(url)}">${escapeHtml(title)}</a>
-                  <span class="other-date">${escapeHtml(date)}</span>
-                </div>
-                ${text ? `<div class="other-text">${escapeHtml(text)}</div>` : ``}
-                ${tags.length ? `<div class="other-tags">${tags.slice(0,6).map(t => `<span class="hashtag" onclick="openOtherWithTag('${escapeJs(t)}')">${escapeHtml(t)}</span>`).join("")}</div>` : ``}
-              </div>
-            </div>`;
-        });
-
-        html += `</div></div></div>`;
-      }
-
-      container.innerHTML = html || `<div class="section" style="padding:20px;text-align:center;">Нет данных</div>`;
+      if (!html) html = `<div class="section" style="padding:20px;text-align:center;">Нет данных</div>`;
+      container.innerHTML = html;
     }
 
     function renderImportantPage() {
@@ -721,16 +719,9 @@
         const url = (item.url || "").toLowerCase();
         const tags = splitTags(item.hashtags || item.tags || "").map(t => t.toLowerCase());
 
-        if (tagFilter) {
-          if (!tags.includes(tagFilter)) return false;
-        }
-
+        if (tagFilter) if (!tags.includes(tagFilter)) return false;
         if (!q) return true;
-
-        if (q.startsWith("#")) {
-          return tags.some(t => t.includes(q));
-        }
-
+        if (q.startsWith("#")) return tags.some(t => t.includes(q));
         return title.includes(q) || text.includes(q) || url.includes(q) || tags.some(t => t.includes(q));
       });
 
@@ -779,6 +770,9 @@
 
     // ======== NAV ========
     function switchPage(pageName, el) {
+      // stop chat timer when leaving chat
+      if (pageName !== "chat" && chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+
       document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
       if (el) el.classList.add("active");
 
@@ -789,6 +783,8 @@
         other: "Прочее",
         gallery: "Галерея",
         important: "Важное",
+        contacts: "Контакты",
+        chat: "Чат",
         admin: "⚙️ Админ"
       };
       document.getElementById("mainTitle").textContent = titles[pageName] || "КПСС";
@@ -802,6 +798,20 @@
 
       if (pageName === "other") renderOtherPage();
       if (pageName === "admin") renderAdminPage();
+      if (pageName === "contacts") renderContactsPage();
+      if (pageName === "chat") renderChatPage();
+    }
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+      document.getElementById("mainContent").classList.toggle("expanded");
+    }
+
+    function closeSidebarOnMobile() {
+      if (window.innerWidth <= 768) {
+        document.getElementById("sidebar").classList.add("closed");
+        document.getElementById("mainContent").classList.add("expanded");
+      }
     }
 
     function openOtherWithTag(tag) {
@@ -827,12 +837,7 @@
     function splitTags(s) {
       const raw = String(s || "").trim();
       if (!raw) return [];
-      const parts = raw
-        .replace(/,/g, " ")
-        .split(/\s+/)
-        .map(x => x.trim())
-        .filter(Boolean)
-        .map(normalizeTag);
+      const parts = raw.replace(/,/g, " ").split(/\s+/).map(x => x.trim()).filter(Boolean).map(normalizeTag);
 
       const seen = new Set();
       const out = [];
@@ -875,18 +880,6 @@
       document.getElementById("imageModal").classList.remove("active");
     }
 
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("closed");
-      document.getElementById("mainContent").classList.toggle("expanded");
-    }
-
-    function closeSidebarOnMobile() {
-      if (window.innerWidth <= 768) {
-        document.getElementById("sidebar").classList.add("closed");
-        document.getElementById("mainContent").classList.add("expanded");
-      }
-    }
-
     function showLoading(show) {
       document.getElementById("loading").style.display = show ? "flex" : "none";
       document.getElementById("app").style.display = show ? "none" : "block";
@@ -915,7 +908,6 @@
       loadAllData();
     }
 
-    // ======== SAFE ========
     function escapeHtml(s) {
       return String(s ?? "")
         .replace(/&/g, "&amp;")
@@ -924,9 +916,7 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
-    function escapeAttr(s) {
-      return escapeHtml(s).replace(/"/g, "&quot;");
-    }
+    function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
     function escapeJs(s) {
       return String(s ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
     }
@@ -942,13 +932,14 @@
     }
 
     function showAbout() {
-      closeDrawer();
       document.getElementById("infoModalTitle").textContent = "О проекте";
       document.getElementById("infoModalContent").innerHTML = `
         <div style="color:#b0b0b0;font-size:14px;line-height:1.5;">
           КПСС — сайт/приложение, которое читает данные из Google Таблицы и показывает их красиво.
           <br><br>
           <b>Скрытая админка:</b> 5 раз нажми на “КПСС” в боковом меню.
+          <br><br>
+          <b>Чат:</b> регистрация и сообщения хранятся в отдельной таблице KPSS_USERS_CHAT.
         </div>
       `;
       document.getElementById("infoModal").classList.add("active");
@@ -996,19 +987,15 @@
       if (v === ADMIN_PASSWORD) {
         isAdmin = true;
         closeModal("infoModal");
-        enableAdminUI();
+        const mi = document.getElementById("adminMenuItem");
+        if (mi) mi.style.display = "flex";
         showUpdateIndicator();
       } else {
         if (err) err.style.display = "block";
       }
     }
 
-    function enableAdminUI() {
-      const mi = document.getElementById("adminMenuItem");
-      if (mi) mi.style.display = "flex";
-      renderAdminPage();
-    }
-
+    // ======== ADMIN PAGE (запись в основную таблицу) ========
     function renderAdminPage() {
       const container = document.getElementById("page-admin");
       if (!container) return;
@@ -1028,50 +1015,8 @@
               <input id="adm_imp_link" placeholder="Ссылка (необязательно)">
               <input id="adm_imp_time" placeholder="Время (например 12:30)">
               <input id="adm_imp_date" placeholder="Дата (например 03.03.2026)">
-              <button class="admin-btn" onclick="submitAdmin('important')">Отправить</button>
-              <div class="admin-note">Добавит строку в лист <b>important</b>.</div>
-            </div>
-          </div>
-
-          <div class="admin-card">
-            <h3>💬 Чаты</h3>
-            <div class="admin-row">
-              <input id="adm_chat_title" placeholder="Название">
-              <input id="adm_chat_emoji" placeholder="Эмодзи (например 🔥)">
-              <textarea id="adm_chat_text" rows="3" placeholder="Сообщение"></textarea>
-              <button class="admin-btn" onclick="submitAdmin('chats')">Отправить</button>
-              <div class="admin-note">Добавит строку в лист <b>chats</b>.</div>
-            </div>
-          </div>
-
-          <div class="admin-card">
-            <h3>📅 Расписание</h3>
-            <div class="admin-row">
-              <input id="adm_s_day" placeholder="День (например Понедельник)">
-              <input id="adm_s_time" placeholder="Время (например 09:00)">
-              <input id="adm_s_subject" placeholder="Предмет">
-              <input id="adm_s_room" placeholder="Кабинет">
-              <input id="adm_s_teacher" placeholder="Преподаватель (необязательно)">
-              <button class="admin-btn" onclick="submitAdmin('schedule')">Отправить</button>
-              <div class="admin-note">Добавит строку в лист <b>schedule</b>.</div>
-            </div>
-          </div>
-
-          <div class="admin-card">
-            <h3>🖼️ Галерея</h3>
-            <div class="admin-row">
-              <input id="adm_g_title" placeholder="Название">
-              <input id="adm_g_url" placeholder="Ссылка на картинку (image_url)">
-              <input id="adm_g_date" placeholder="Дата (необязательно)">
-              <button class="admin-btn" onclick="submitAdmin('gallery')">Отправить</button>
-              <div class="admin-note">Добавит строку в лист <b>gallery</b>.</div>
-            </div>
-          </div>
-
-          <div class="admin-card">
-            <h3>🔧 Примечание</h3>
-            <div class="admin-note">
-              После отправки данные добавятся в Google Таблицу. Затем нажми <b>🔄 Обновить данные</b> (кружок ● сверху справа).
+              <button class="admin-btn" onclick="submitMainAdmin('important')">Отправить</button>
+              <div class="admin-note">Запись уходит в основную таблицу через Apps Script WebApp (MAIN_DATA_APPS_SCRIPT_URL).</div>
             </div>
           </div>
         </div>
@@ -1083,59 +1028,337 @@
       return (el?.value || "").trim();
     }
 
-    // Отправка в Apps Script
-async function submitAdmin(type) {
-  if (!isAdmin) return;
+    // Отправка в основную таблицу: form-urlencoded + no-cors (стабильно на GitHub Pages)
+    async function submitMainAdmin(type) {
+      if (!isAdmin) return;
 
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
-    alert("Сначала вставь APPS_SCRIPT_URL (Web App) в index.html");
-    return;
-  }
+      if (!MAIN_DATA_APPS_SCRIPT_URL || MAIN_DATA_APPS_SCRIPT_URL.includes("PASTE_MAIN")) {
+        alert("Вставь MAIN_DATA_APPS_SCRIPT_URL (WebApp /exec) для записи в основную таблицу.");
+        return;
+      }
 
-  let data = {};
-  if (type === "important") {
-    data = {
-      sender: val("adm_imp_sender"),
-      text: val("adm_imp_text"),
-      link: val("adm_imp_link"),
-      time: val("adm_imp_time"),
-      date: val("adm_imp_date")
-    };
-    if (!data.text) return alert("Заполни текст (important)");
-  }
-  if (type === "chats") {
-    data = { title: val("adm_chat_title"), emoji: val("adm_chat_emoji"), text: val("adm_chat_text") };
-    if (!data.title || !data.text) return alert("Заполни название и сообщение (chats)");
-  }
-  if (type === "schedule") {
-    data = { day: val("adm_s_day"), time: val("adm_s_time"), subject: val("adm_s_subject"), room: val("adm_s_room"), teacher: val("adm_s_teacher") };
-    if (!data.day || !data.time || !data.subject) return alert("Заполни день, время, предмет (schedule)");
-  }
-  if (type === "gallery") {
-    data = { title: val("adm_g_title"), image_url: val("adm_g_url"), date: val("adm_g_date") };
-    if (!data.title || !data.image_url) return alert("Заполни название и ссылку на картинку (gallery)");
-  }
+      let data = {};
+      if (type === "important") {
+        data = {
+          sender: val("adm_imp_sender"),
+          text: val("adm_imp_text"),
+          link: val("adm_imp_link"),
+          time: val("adm_imp_time"),
+          date: val("adm_imp_date")
+        };
+        if (!data.text) return alert("Заполни текст");
+      }
 
-  // ВАЖНО: отправляем как form-urlencoded, без JSON заголовков (иначе preflight/CORS)
-  const payload = JSON.stringify({ type, data });
-  const body = "payload=" + encodeURIComponent(payload);
+      const payload = JSON.stringify({ type, data });
+      const body = "payload=" + encodeURIComponent(payload);
 
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors", // важно: иначе браузер блокирует
-      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body
-    });
+      try {
+        await fetch(MAIN_DATA_APPS_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body
+        });
 
-    // Мы не можем прочитать ответ (no-cors), поэтому просто считаем успехом
-    showUpdateIndicator();
-    loadAttempts = 0;
-    loadAllData();
-  } catch (e) {
-    alert("Ошибка отправки: " + (e?.message || e));
-  }
-}
+        showUpdateIndicator();
+        loadAttempts = 0;
+        loadAllData();
+      } catch (e) {
+        alert("Ошибка отправки: " + (e?.message || e));
+      }
+    }
+
+    // ===================== USERS/CHAT (REG + CONTACTS + MESSAGES) =====================
+
+    function loadSession() {
+      try {
+        const s = localStorage.getItem("kpss_user");
+        if (s) currentUser = JSON.parse(s);
+      } catch {}
+      updateAuthUI();
+    }
+
+    function saveSession(u) {
+      currentUser = u;
+      localStorage.setItem("kpss_user", JSON.stringify(u));
+      updateMembersText();
+      updateAuthUI();
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      currentPeer = null;
+      lastMsgTime = null;
+      if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+      localStorage.removeItem("kpss_user");
+      updateMembersText();
+      updateAuthUI();
+      showUpdateIndicator();
+      switchPage("home", document.querySelector(".menu-item"));
+    }
+
+    function updateAuthUI() {
+      const contacts = document.getElementById("contactsMenuItem");
+      if (contacts) contacts.style.display = currentUser ? "flex" : "none";
+
+      const drawerLogout = document.getElementById("drawerLogout");
+      if (drawerLogout) drawerLogout.style.display = currentUser ? "block" : "none";
+    }
+
+    function openAuthModal() {
+      document.getElementById("infoModalTitle").textContent = "Вход / Регистрация";
+      document.getElementById("infoModalContent").innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input id="auth_username" placeholder="Имя (username)" style="width:100%;padding:14px 16px;border-radius:14px;background:#404040;border:1px solid #505050;color:#f0f0f0;font-size:14px;">
+          <input id="auth_pass" type="password" placeholder="Пароль" style="width:100%;padding:14px 16px;border-radius:14px;background:#404040;border:1px solid #505050;color:#f0f0f0;font-size:14px;">
+          <button class="retry-btn" style="margin-top:6px;" onclick="authLogin()">Войти</button>
+          <button class="retry-btn" style="margin-top:6px;background:#404040;color:#ff99cc;border:1px solid #505050;" onclick="authRegister()">Зарегистрироваться</button>
+          <div id="auth_err" style="color:#ff99cc;font-size:13px;display:none;"></div>
+          <div style="color:#808080;font-size:12px;line-height:1.35;">
+            * Простой вход для переписок. Не используй “важные” пароли.
+          </div>
+          <div style="color:#808080;font-size:12px;line-height:1.35;">
+            Таблица KPSS_USERS_CHAT (read-only): <span style="color:#b0b0b0;">pubhtml</span>
+          </div>
+        </div>
+      `;
+      document.getElementById("infoModal").classList.add("active");
+    }
+
+    function showAuthError(msg) {
+      const e = document.getElementById("auth_err");
+      if (!e) return;
+      e.style.display = "block";
+      e.textContent = msg;
+    }
+
+    // JSONP helper (обход CORS для GET)
+    function jsonp(url) {
+      return new Promise((resolve, reject) => {
+        const cb = "cb_" + Math.random().toString(36).slice(2);
+        const s = document.createElement("script");
+
+        window[cb] = (data) => {
+          delete window[cb];
+          s.remove();
+          resolve(data);
+        };
+
+        s.onerror = () => {
+          delete window[cb];
+          s.remove();
+          reject(new Error("JSONP load error"));
+        };
+
+        const sep = url.includes("?") ? "&" : "?";
+        s.src = url + sep + "callback=" + cb;
+        document.body.appendChild(s);
+      });
+    }
+
+    function ensureUsersChatApi() {
+      if (!USERS_CHAT_API_URL || USERS_CHAT_API_URL.includes("PASTE_USERS_CHAT")) {
+        showAuthError("Нужен USERS_CHAT_API_URL (WebApp /exec) для регистрации/чата.");
+        return false;
+      }
+      return true;
+    }
+
+    async function authLogin() {
+      const u = (document.getElementById("auth_username")?.value || "").trim();
+      const p = (document.getElementById("auth_pass")?.value || "").trim();
+      if (!u || !p) return showAuthError("Заполни username и пароль");
+      if (!ensureUsersChatApi()) return;
+
+      try {
+        const url = `${USERS_CHAT_API_URL}?action=login&username=${encodeURIComponent(u)}&pass=${encodeURIComponent(p)}`;
+        const r = await jsonp(url);
+        if (!r?.ok) return showAuthError(r?.error || "Ошибка входа");
+        saveSession(r.data);
+        closeModal("infoModal");
+        showUpdateIndicator();
+      } catch (e) {
+        showAuthError("Ошибка сети: " + (e?.message || e));
+      }
+    }
+
+    async function authRegister() {
+      const u = (document.getElementById("auth_username")?.value || "").trim();
+      const p = (document.getElementById("auth_pass")?.value || "").trim();
+      if (!u || !p) return showAuthError("Заполни username и пароль");
+      if (!ensureUsersChatApi()) return;
+
+      try {
+        const url = `${USERS_CHAT_API_URL}?action=register&username=${encodeURIComponent(u)}&pass=${encodeURIComponent(p)}`;
+        const r = await jsonp(url);
+        if (!r?.ok) return showAuthError(r?.error || "Ошибка регистрации");
+        saveSession(r.data);
+        closeModal("infoModal");
+        showUpdateIndicator();
+      } catch (e) {
+        showAuthError("Ошибка сети: " + (e?.message || e));
+      }
+    }
+
+    async function renderContactsPage() {
+      const container = document.getElementById("page-contacts");
+      if (!container) return;
+
+      if (!currentUser) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Войди, чтобы видеть контакты</div>`;
+        return;
+      }
+      if (!ensureUsersChatApi()) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;color:#ff99cc;">
+          Нужен USERS_CHAT_API_URL (WebApp /exec) для загрузки контактов.
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div class="section" style="padding:20px;">Загрузка...</div>`;
+
+      try {
+        const url = `${USERS_CHAT_API_URL}?action=contacts&user_id=${encodeURIComponent(currentUser.user_id)}`;
+        const r = await jsonp(url);
+        if (!r?.ok) throw new Error(r?.error || "Ошибка");
+
+        const list = r.data || [];
+        let html = `<div class="section">
+          <div class="section-header"><span>📇</span> Контакты<span>${escapeHtml(currentUser.username)}</span></div>
+          <div class="section-content"><div class="other-list">`;
+
+        if (!list.length) {
+          html += `<div style="padding:18px 16px;color:#b0b0b0;">Пока нет других пользователей</div>`;
+        } else {
+          list.forEach(c => {
+            html += `
+              <div class="other-item" style="cursor:pointer;" onclick="openChat('${escapeJs(c.user_id)}','${escapeJs(c.username)}')">
+                <div class="other-icon">👤</div>
+                <div class="other-body">
+                  <div class="other-title">
+                    <a href="javascript:void(0)">${escapeHtml(c.username)}</a>
+                    <span class="other-date">💬</span>
+                  </div>
+                  <div class="other-text">Открыть чат</div>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        html += `</div></div></div>`;
+        container.innerHTML = html;
+
+      } catch (e) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;color:#ff99cc;">Ошибка: ${escapeHtml(e?.message || e)}</div>`;
+      }
+    }
+
+    function openChat(peerId, peerName) {
+      currentPeer = { user_id: peerId, username: peerName };
+      lastMsgTime = null;
+      switchPage("chat", null);
+      renderChatPage();
+    }
+
+    function renderChatPage() {
+      const container = document.getElementById("page-chat");
+      if (!container) return;
+
+      if (!currentUser) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Нужен вход</div>`;
+        return;
+      }
+      if (!currentPeer) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;">Выбери контакт</div>`;
+        return;
+      }
+      if (!ensureUsersChatApi()) {
+        container.innerHTML = `<div class="section" style="padding:20px;text-align:center;color:#ff99cc;">
+          Нужен USERS_CHAT_API_URL (WebApp /exec) для чата.
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="section">
+          <div class="section-header" style="cursor:default;">
+            <span>💬</span> Чат: ${escapeHtml(currentPeer.username)}
+            <span><span class="hashtag" onclick="switchPage('contacts', document.getElementById('contactsMenuItem'))">← Контакты</span></span>
+          </div>
+          <div class="section-content">
+            <div id="chatBox" class="chat-box"></div>
+            <div class="chat-input-row">
+              <input id="chatInput" placeholder="Сообщение..." onkeydown="if(event.key==='Enter'){sendChat();}">
+              <button class="admin-btn" onclick="sendChat()">Отправить</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      loadChatMessages(true);
+      if (chatTimer) clearInterval(chatTimer);
+      chatTimer = setInterval(() => loadChatMessages(false), 4000);
+    }
+
+    async function loadChatMessages(scrollToBottom) {
+      if (!currentUser || !currentPeer) return;
+
+      try {
+        let url = `${USERS_CHAT_API_URL}?action=messages&user_id=${encodeURIComponent(currentUser.user_id)}&peer_id=${encodeURIComponent(currentPeer.user_id)}`;
+        if (lastMsgTime) url += `&after=${encodeURIComponent(lastMsgTime)}`;
+
+        const r = await jsonp(url);
+        if (!r?.ok) return;
+
+        const msgs = r.data || [];
+        if (!msgs.length) return;
+
+        const box = document.getElementById("chatBox");
+        if (!box) return;
+
+        msgs.forEach(m => {
+          const mine = m.from_id === currentUser.user_id;
+          const div = document.createElement("div");
+          div.className = "bubble " + (mine ? "mine" : "their");
+          div.textContent = m.text;
+          box.appendChild(div);
+          lastMsgTime = m.created_at;
+        });
+
+        if (scrollToBottom) box.scrollTop = box.scrollHeight;
+        else box.scrollTop = box.scrollHeight;
+
+      } catch {
+        // тихо
+      }
+    }
+
+    async function sendChat() {
+      const input = document.getElementById("chatInput");
+      const text = (input?.value || "").trim();
+      if (!text) return;
+      input.value = "";
+
+      // POST no-cors (браузер может не дать прочитать ответ, но запрос уйдет)
+      try {
+        await fetch(USERS_CHAT_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "send",
+            from_id: currentUser.user_id,
+            to_id: currentPeer.user_id,
+            text
+          })
+        });
+
+        setTimeout(() => loadChatMessages(true), 700);
+      } catch {
+        // на no-cors fetch иногда не кидает ошибку, но пусть будет
+      }
+    }
   </script>
 </body>
 </html>
