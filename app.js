@@ -46,8 +46,7 @@ window.addEventListener("load", () => {
   loadAllData();
   setInterval(() => { loadAttempts = 0; loadAllData(); }, 5 * 60 * 1000);
 
-  // swipe: open right drawer by swiping LEFT
-  initSwipeForDrawer();
+  initSwipeForSidebar();
 });
 
 /* ===================== UI BINDINGS ===================== */
@@ -140,14 +139,22 @@ function closeDrawer() {
 }
 
 /* swipe left to open drawer (from right edge) */
-function initSwipeForDrawer() {
-  let startX = 0, startY = 0, tracking = false;
+function initSwipeForSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("mainContent");
 
+  let startX = 0;
+  let startY = 0;
+  let tracking = false;
+
+  // Открытие меню: свайп от правого края влево
   window.addEventListener("touchstart", (e) => {
     const t = e.touches[0];
-    startX = t.clientX; startY = t.clientY;
-    // start near right edge to avoid conflict with scrolling
-    tracking = (window.innerWidth - startX) < 40;
+    startX = t.clientX;
+    startY = t.clientY;
+
+    // только край экрана (30px)
+    tracking = (window.innerWidth - startX) < 30;
   }, { passive: true });
 
   window.addEventListener("touchend", (e) => {
@@ -158,23 +165,28 @@ function initSwipeForDrawer() {
     const dx = t.clientX - startX;
     const dy = t.clientY - startY;
 
-    // swipe left: dx negative
-    if (Math.abs(dx) > 70 && Math.abs(dy) < 40 && dx < 0) {
-      openDrawer();
+    if (Math.abs(dx) > 70 && Math.abs(dy) < 45 && dx < 0) {
+      sidebar.classList.remove("closed");
+      main.classList.remove("expanded");
     }
   }, { passive: true });
 
-  // swipe right to close drawer (anywhere on drawer)
-  $("#rightDrawer").addEventListener("touchstart", (e) => {
+  // Закрытие: свайп вправо по меню
+  sidebar.addEventListener("touchstart", (e) => {
     const t = e.touches[0];
-    startX = t.clientX; startY = t.clientY;
+    startX = t.clientX;
+    startY = t.clientY;
   }, { passive: true });
 
-  $("#rightDrawer").addEventListener("touchend", (e) => {
+  sidebar.addEventListener("touchend", (e) => {
     const t = e.changedTouches[0];
     const dx = t.clientX - startX;
     const dy = t.clientY - startY;
-    if (Math.abs(dx) > 70 && Math.abs(dy) < 40 && dx > 0) closeDrawer();
+
+    if (Math.abs(dx) > 70 && Math.abs(dy) < 45 && dx > 0) {
+      sidebar.classList.add("closed");
+      main.classList.add("expanded");
+    }
   }, { passive: true });
 }
 
